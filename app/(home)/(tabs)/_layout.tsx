@@ -1,9 +1,9 @@
+import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Tabs } from 'expo-router';
 
 import { HapticTab } from '@/components/HapticTab';
-import { IconSymbol } from '@/components/IconSymbol';
 
 function TabLayout() {
   return (
@@ -24,7 +24,7 @@ function TabLayout() {
         options={{
           title: 'Chats',
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="message.fill" color={color} />
+            <Ionicons name="chatbubble-sharp" size={24} color={color} />
           ),
         }}
       />
