@@ -1,5 +1,6 @@
 import { Stack, useRouter } from 'expo-router';
-import Button from '../../../components/Button';
+
+import Button from '@/components/Button';
 
 const NewMessageLayout = () => {
   const router = useRouter();

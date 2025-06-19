@@ -1,13 +1,13 @@
 import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
+import { useChatContext } from 'stream-chat-expo';
 
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
-import { useChatContext } from 'stream-chat-expo';
-import Spinner from '../../../components/Spinner';
-import UserCard from '../../../components/UserCard';
-import useContacts from '../../../hooks/useContacts';
+import Spinner from '@/components/Spinner';
+import UserCard from '@/components/UserCard';
+import useContacts from '@/hooks/useContacts';
 
 const NewMessageScreen = () => {
   const router = useRouter();

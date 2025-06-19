@@ -34,6 +34,9 @@ const theme: DeepPartial<Theme> = {
     title: {
       fontWeight: '500',
     },
+    unreadContainer: {
+      backgroundColor: '#2c6bed',
+    },
   },
   messageList: {
     contentContainer: {

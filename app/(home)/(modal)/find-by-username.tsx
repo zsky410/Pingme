@@ -1,14 +1,14 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
+import { View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
 import Screen from '@/components/Screen';
+import Spinner from '@/components/Spinner';
 import TextField from '@/components/TextField';
 import UserCard from '@/components/UserCard';
 import useContacts from '@/hooks/useContacts';
-import { View } from 'react-native';
-import Spinner from '../../../components/Spinner';
 
 const FindByUsernameScreen = () => {
   const { client } = useChatContext();

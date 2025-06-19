@@ -4,11 +4,11 @@ import { View } from 'react-native';
 import { Channel } from 'stream-chat';
 import { ChannelList, useChatContext } from 'stream-chat-expo';
 
+import AppMenu from '@/components/AppMenu';
 import Button from '@/components/Button';
+import PreviewAvatar from '@/components/PreviewAvatar';
 import Screen from '@/components/Screen';
-import AppMenu from '../../../components/AppMenu';
-import PreviewAvatar from '../../../components/PreviewAvatar';
-import ScreenLoading from '../../../components/ScreenLoading';
+import ScreenLoading from '@/components/ScreenLoading';
 
 export default function HomeScreen() {
   const { client } = useChatContext();

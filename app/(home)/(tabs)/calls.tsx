@@ -1,9 +1,9 @@
 import { Feather } from '@expo/vector-icons';
 import { Text, View } from 'react-native';
 
+import AppMenu from '@/components/AppMenu';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
-import AppMenu from '../../../components/AppMenu';
 
 function CallsScreen() {
   return (
