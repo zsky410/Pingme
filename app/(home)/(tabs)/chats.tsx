@@ -33,11 +33,11 @@ export default function HomeScreen() {
           name="TropicolX"
         />
         <View className="flex flex-row items-center gap-8">
-          <Button variant="icon">
+          <Button variant="plain">
             <Feather name="camera" size={20} />
           </Button>
           <Link href="/new-message" asChild>
-            <Button variant="icon">
+            <Button variant="plain">
               <Feather name="edit" size={18} />
             </Button>
           </Link>

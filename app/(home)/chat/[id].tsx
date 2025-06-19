@@ -20,7 +20,9 @@ import MessageListHeader from '@/components/MessageListHeader';
 import Screen from '@/components/Screen';
 import ScreenLoading from '@/components/ScreenLoading';
 import SendButton from '@/components/SendButton';
+import { useUser } from '@clerk/clerk-expo';
 import MessageAvatar from '../../../components/MessageAvatar';
+import { checkIfDMChannel, getChannelName } from '../../../lib/utils';
 
 const myMessageTheme: DeepPartial<Theme> = {
   messageSimple: {
@@ -38,13 +40,15 @@ const myMessageTheme: DeepPartial<Theme> = {
 const ChatScreen = () => {
   const { id: channelId } = useLocalSearchParams<{ id: string }>();
   const { client: chatClient } = useChatContext();
+  const { user } = useUser();
   const router = useRouter();
 
   const [channel, setChannel] = useState<ChannelType>();
+  const [channelName, setChannelName] = useState<string>('');
+  const [isDMChannel, setIsDMChannel] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
-  // @ts-expect-error - channel?.data?.name can be undefined
-  const channelName = channel?.data?.name || 'Channel';
-  const isDMChannel = channel?.id?.startsWith('!members');
+
+  const userId = user?.id!;
 
   useEffect(() => {
     const loadChannel = async () => {
@@ -52,11 +56,13 @@ const ChatScreen = () => {
       await channel.watch();
 
       setChannel(channel);
+      setChannelName(getChannelName(channel, userId));
+      setIsDMChannel(checkIfDMChannel(channel));
       setLoading(false);
     };
 
     if (chatClient && !channel) loadChannel();
-  }, [channelId, channel, chatClient]);
+  }, [channelId, channel, chatClient, userId]);
 
   if (loading) {
     return <ScreenLoading />;
@@ -66,7 +72,7 @@ const ChatScreen = () => {
     <Screen className="flex-1 bg-white" viewClassName="pb-safe">
       <View className="pl-1 pr-4 flex flex-row items-center justify-between w-full h-8">
         <View className="flex flex-row items-center gap-4">
-          <Button variant="icon" onPress={() => router.back()}>
+          <Button variant="plain" onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={24} color="black" />
           </Button>
           <Avatar
@@ -78,10 +84,10 @@ const ChatScreen = () => {
           <Text className="text-base font-bold">{channelName}</Text>
         </View>
         <View className="flex flex-row items-center gap-6">
-          <Button variant="icon" onPress={() => null}>
+          <Button variant="plain" onPress={() => null}>
             <Feather name="video" size={24} color="black" />
           </Button>
-          <Button variant="icon" onPress={() => null}>
+          <Button variant="plain" onPress={() => null}>
             <Ionicons name="call-outline" size={24} color="black" />
           </Button>
         </View>

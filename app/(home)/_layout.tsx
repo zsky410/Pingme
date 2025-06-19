@@ -35,7 +35,12 @@ const theme: DeepPartial<Theme> = {
       fontWeight: '500',
     },
   },
-  messageList: {},
+  messageList: {
+    contentContainer: {
+      justifyContent: 'flex-end',
+      flexGrow: 1,
+    },
+  },
   inlineDateSeparator: {
     container: {
       backgroundColor: 'transparent',

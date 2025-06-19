@@ -9,7 +9,7 @@ const AttachButton = ({ disabled }: AttachButtonProps) => {
 
   return (
     <Button
-      variant="icon"
+      variant="plain"
       disabled={disabled}
       onPress={toggleAttachmentPicker}
       className={clsx(

@@ -1,11 +1,10 @@
-import { ActivityIndicator } from 'react-native';
-
 import Screen from './Screen';
+import Spinner from './Spinner';
 
 const ScreenLoading = () => {
   return (
     <Screen className="bg-white" viewClassName="items-center justify-center">
-      <ActivityIndicator color="#2c6bed" />
+      <Spinner />
     </Screen>
   );
 };

@@ -2,25 +2,28 @@ import React from 'react';
 import { Text, View } from 'react-native';
 import { useChannelContext } from 'stream-chat-expo';
 
+import { useUser } from '@clerk/clerk-expo';
 import { MaterialIcons } from '@expo/vector-icons';
+import { checkIfDMChannel, getChannelName } from '../lib/utils';
 import Avatar from './Avatar';
 
 const MessageListHeader = () => {
   const { channel } = useChannelContext();
-  // @ts-expect-error - channel?.data?.name can be undefined
-  const channelName = channel?.data?.name || 'Channel';
-  const isDMChannel = channel?.id?.startsWith('!members');
+  const { user } = useUser();
+
+  const userId = user?.id!;
+  const channelName = getChannelName(channel, userId);
+  const isDMChannel = checkIfDMChannel(channel);
+  const placeholderType = isDMChannel ? 'text' : 'icon';
 
   const text = isDMChannel
-    ? `This conversation is just between ${channel?.data?.members?.filter(
-        (m) => m !== channel._client.userID
-      )} and you`
+    ? `This conversation is just between ${channelName} and you`
     : 'This conversation is just between the members of this channel';
 
   return (
     <View className="items-center gap-3 mt-14 mb-8">
       <Avatar
-        placeholderType="icon"
+        placeholderType={placeholderType}
         size={80}
         fontSize={40}
         name={channelName}

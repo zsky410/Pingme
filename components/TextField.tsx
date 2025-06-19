@@ -1,16 +1,27 @@
-import { DimensionValue, TextInput } from 'react-native';
+import { DimensionValue, Text, TextInput, View } from 'react-native';
 
 interface TextFieldProps extends React.ComponentProps<typeof TextInput> {
   width?: DimensionValue;
+  label?: string;
 }
 
-const TextField = ({ width = '100%', ...otherProps }: TextFieldProps) => {
+const TextField = ({
+  label,
+  width = '100%',
+  ...otherProps
+}: TextFieldProps) => {
   return (
-    <TextInput
+    <View
       style={{ width }}
-      className="bg-transparent flex-row items-center rounded-xl px-4 py-3 border border-gray-300 dark:border-gray-600"
-      {...otherProps}
-    />
+      className="relative px-4 flex-row bg-white items-center justify-between rounded-xl py-3 border border-white"
+    >
+      {label && (
+        <View>
+          <Text className="w-[108px] font-medium">{label}</Text>
+        </View>
+      )}
+      <TextInput className="flex-1" {...otherProps} />
+    </View>
   );
 };
 

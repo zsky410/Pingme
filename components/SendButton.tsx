@@ -11,7 +11,7 @@ const SendButton = () => {
 
   return (
     <Button
-      variant="icon"
+      variant="plain"
       onPress={sendMessage}
       className={clsx('p-0.5 bg-primary rounded-full')}
     >

@@ -5,7 +5,7 @@ interface ButtonProps extends React.ComponentProps<typeof TouchableOpacity> {
   onPress?: () => void;
   children: React.ReactNode;
   className?: string;
-  variant?: 'icon' | 'default' | 'text';
+  variant?: 'plain' | 'default' | 'text';
 }
 
 function Button({
@@ -15,10 +15,10 @@ function Button({
   variant = 'default',
   ...otherProps
 }: ButtonProps) {
-  if (variant === 'icon')
+  if (variant === 'plain')
     return (
       <TouchableOpacity
-        className={clsx('justify-center items-center w-fit h-fit', className)}
+        className={clsx('w-fit h-fit', className)}
         onPress={onPress}
         {...otherProps}
       >

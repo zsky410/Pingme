@@ -1,15 +1,17 @@
 import Checkbox from 'expo-checkbox';
 import { getRandomBytesAsync } from 'expo-crypto';
 import { useRouter } from 'expo-router';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
 import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
+import Spinner from '@/components/Spinner';
 import TextField from '@/components/TextField';
+import useContacts from '@/hooks/useContacts';
 import { getLastSeen } from '@/lib/utils';
 
 const NewGroupScreen = () => {
@@ -19,67 +21,32 @@ const NewGroupScreen = () => {
   const [query, setQuery] = useState('');
   const [groupName, setGroupName] = useState('');
   const [users, setUsers] = useState<UserResponse[]>([]);
-  const [originalUsers, setOriginalUsers] = useState<UserResponse[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
-  const debounceTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const cancelled = useRef(false);
+  const { contacts, loadingContacts, debounceSearch } = useContacts(
+    client,
+    setUsers
+  );
 
-  useEffect(() => {
-    const getAllUsers = async () => {
-      const userId = client.userID;
+  const resetUsers = () => {
+    setUsers(contacts);
+  };
 
-      const { users } = await client.queryUsers(
-        // @ts-expect-error - id
-        { id: { $ne: userId } },
-        { id: 1, name: 1 },
-        { limit: 20 }
+  const search = (query: string) => {
+    const users = contacts.filter((user) => {
+      // @ts-expect-error - name
+      const name = user.name || `${user.first_name} ${user.last_name}`;
+      return (
+        user.username?.toLowerCase().includes(query.toLowerCase()) ||
+        name.toLowerCase().includes(query.toLowerCase())
       );
+    });
+    setUsers(users);
+  };
 
-      setUsers(users);
-      setOriginalUsers(users);
-    };
-    getAllUsers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const handleUserSearch = async (text: string) => {
-    const query = text.trimStart();
-    setQuery(query);
-
-    if (!query) {
-      if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-      cancelled.current = true;
-      setUsers(originalUsers);
-      return;
-    }
-
-    cancelled.current = false;
-
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(async () => {
-      if (cancelled.current) return;
-
-      try {
-        const userId = client.userID;
-        const { users } = await client.queryUsers(
-          {
-            $or: [
-              { id: { $autocomplete: query } },
-              { name: { $autocomplete: query } },
-            ],
-            // @ts-expect-error - id
-            id: { $ne: userId },
-          },
-          { id: 1, name: 1 },
-          { limit: 5 }
-        );
-
-        if (!cancelled.current) setUsers(users);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      }
-    }, 200);
+  const handleUserSearch = (text: string) => {
+    setQuery(text);
+    debounceSearch(text, resetUsers, search);
   };
 
   const leave = () => {
@@ -115,7 +82,6 @@ const NewGroupScreen = () => {
       });
 
       await group.create();
-      console.log('Group created successfully:', group);
       leave();
     } catch (error) {
       console.error(error);
@@ -150,35 +116,39 @@ const NewGroupScreen = () => {
   );
 
   return (
-    <Screen className="bg-white" viewClassName="pt-4 px-4 gap-4">
-      <Text className="mx-1 font-medium text-[1rem] text-color-text-secondary">
-        Group name
-      </Text>
+    <Screen viewClassName="pt-4 px-4 gap-4">
       <TextField
         id="groupName"
+        label="Group Name"
+        placeholder="Group Name"
         value={groupName}
         onChangeText={(value) => setGroupName(value)}
-        placeholder="Group name"
       />
-      <Text className="mx-1 font-medium text-[1rem] text-color-text-secondary">
-        Add members
-      </Text>
       <TextField
         id="users"
+        label="Add Members"
         placeholder="Who would you like to add?"
         value={query}
         onChangeText={(value) => handleUserSearch(value)}
+        autoCapitalize="none"
       />
-      <View className="flex flex-col gap-2 mt-2">
-        {sortedUsers.map((user) => (
-          <UserCheckbox
-            key={user.id}
-            user={user}
-            checked={selectedUsers.includes(user.id)}
-            onValueChange={(value) => onSelectUser(user.id, value)}
-          />
-        ))}
-      </View>
+      {loadingContacts && (
+        <View className="flex items-center justify-center py-4">
+          <Spinner />
+        </View>
+      )}
+      {!loadingContacts && users.length > 0 && (
+        <View className="flex flex-col gap-2 mt-2">
+          {sortedUsers.map((user) => (
+            <UserCheckbox
+              key={user.id}
+              user={user}
+              checked={selectedUsers.includes(user.id)}
+              onValueChange={(value) => onSelectUser(user.id, value)}
+            />
+          ))}
+        </View>
+      )}
 
       <Button
         className="mt-auto"
@@ -200,7 +170,10 @@ interface UserCheckboxProps {
 
 const UserCheckbox = ({ user, checked, onValueChange }: UserCheckboxProps) => {
   return (
-    <View className="flex-row items-center gap-2 p-2 h-[3.5rem] rounded-xl">
+    <Pressable
+      onPress={() => onValueChange(!checked)}
+      className="bg-white flex-row items-center gap-2 py-3 px-4 rounded-xl"
+    >
       <View className="relative h-10 w-10">
         <Avatar
           // @ts-expect-error - names
@@ -224,7 +197,7 @@ const UserCheckbox = ({ user, checked, onValueChange }: UserCheckboxProps) => {
           className="size-4 rounded border-2 border-color-borders-input"
         />
       </View>
-    </View>
+    </Pressable>
   );
 };
 
