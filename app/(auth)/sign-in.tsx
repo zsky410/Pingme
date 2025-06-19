@@ -14,10 +14,11 @@ function SignInScreen() {
 
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const onSignInPress = async () => {
     if (!isLoaded) return;
-
+    setLoading(true);
     try {
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
@@ -36,11 +37,13 @@ function SignInScreen() {
       }
     } catch (err) {
       getError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Screen viewClassName="pt-10 px-4 gap-4">
+    <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
       <View className="gap-3">
         <Text className="text-center text-3xl font-semibold">Sign in</Text>
         <Text className="text-center text-base text-gray-500">

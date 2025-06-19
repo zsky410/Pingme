@@ -7,28 +7,36 @@ import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
 import UserCard from '@/components/UserCard';
 import useContacts from '@/hooks/useContacts';
+import { View } from 'react-native';
+import Spinner from '../../../components/Spinner';
 
 const FindByUsernameScreen = () => {
   const { client } = useChatContext();
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [user, setUser] = useState<UserResponse | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const { contacts, debounceSearch } = useContacts(client);
+  const { debounceSearch } = useContacts(client, undefined, false);
 
   const resetUser = () => {
     setUser(null);
   };
 
-  const search = (query: string) => {
-    const users = contacts.filter((user) => {
-      return user.username?.toLowerCase() === query.toLowerCase();
-    });
+  const search = async (query: string) => {
+    try {
+      setLoading(true);
+      const { users } = await client.queryUsers({
+        username: { $eq: query },
+      });
 
-    if (users.length > 0) {
-      setUser(users[0]);
-    } else {
-      setUser(null);
+      if (users.length > 0) {
+        setUser(users[0]);
+      }
+    } catch (error: any) {
+      console.error('Error fetching user:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,7 +65,7 @@ const FindByUsernameScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-4 px-4 gap-4">
+    <Screen viewClassName="pt-1 px-4 gap-4">
       <TextField
         id="username"
         placeholder="Username"
@@ -65,7 +73,14 @@ const FindByUsernameScreen = () => {
         onChangeText={(value) => handleUserSearch(value)}
         autoCapitalize="none"
       />
-      {user && <UserCard user={user} onPress={() => onSelectUser(user.id)} />}
+      {loading && (
+        <View className="flex items-center justify-center py-4">
+          <Spinner />
+        </View>
+      )}
+      {!loading && user && (
+        <UserCard user={user} onPress={() => onSelectUser(user.id)} />
+      )}
     </Screen>
   );
 };

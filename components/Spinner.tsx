@@ -1,7 +1,11 @@
 import { ActivityIndicator } from 'react-native';
 
-const Spinner = () => {
-  return <ActivityIndicator color="#2c6bed" />;
+interface SpinnerProps {
+  color?: string;
+}
+
+const Spinner = ({ color = '#2c6bed' }: SpinnerProps) => {
+  return <ActivityIndicator color={color} />;
 };
 
 export default Spinner;

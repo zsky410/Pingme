@@ -2,7 +2,7 @@ import { useSignUp } from '@clerk/clerk-expo';
 import clsx from 'clsx';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, View } from 'react-native';
 
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
@@ -22,10 +22,11 @@ function SignUpScreen() {
   const [password, setPassword] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const onSignUpPress = async () => {
     if (!isLoaded || numberError) return;
-
+    setLoading(true);
     try {
       const finalUsername = `${username}_${usernameNumber}`;
       await signUp.create({
@@ -40,12 +41,14 @@ function SignUpScreen() {
       setPendingVerification(true);
     } catch (err) {
       getError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
   const onVerifyPress = async () => {
     if (!isLoaded) return;
-
+    setLoading(true);
     try {
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
@@ -59,6 +62,8 @@ function SignUpScreen() {
       }
     } catch (err) {
       getError(err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,7 +95,7 @@ function SignUpScreen() {
 
   if (pendingVerification) {
     return (
-      <Screen viewClassName="pt-10 px-4 gap-4">
+      <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
         <View className="gap-3">
           <Text className="text-center text-3xl font-semibold">
             Verify email address
@@ -98,26 +103,27 @@ function SignUpScreen() {
           <Text className="text-center text-base text-gray-500">
             Enter the code we sent to {emailAddress.toLowerCase()}
           </Text>
-          <Link href="/sign-up">
+          <Button variant="plain" onPress={() => setPendingVerification(false)}>
             <Text className="text-base text-center text-blue-600">
               Wrong email?
             </Text>
-          </Link>
+          </Button>
         </View>
         <TextField
           value={code}
           placeholder="Enter your verification code"
+          keyboardType="numeric"
           onChangeText={(code) => setCode(code)}
         />
-        <TouchableOpacity onPress={onVerifyPress}>
+        <Button onPress={onVerifyPress}>
           <Text>Verify</Text>
-        </TouchableOpacity>
+        </Button>
       </Screen>
     );
   }
 
   return (
-    <Screen viewClassName="pt-10 px-4 gap-4">
+    <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
       <View className="gap-3">
         <Text className="text-center text-3xl font-semibold">Sign up</Text>
         <Text className="text-center text-base text-gray-500">

@@ -3,7 +3,8 @@ import { StreamChat, UserResponse } from 'stream-chat';
 
 const useContacts = (
   client: StreamChat,
-  setUsers?: (contacts: UserResponse[]) => void
+  setUsers?: (contacts: UserResponse[]) => void,
+  fetchContacts: boolean = true
 ) => {
   const [contacts, setContacts] = useState<UserResponse[]>([]);
   const [loadingContacts, setLoadingContacts] = useState(true);
@@ -44,14 +45,14 @@ const useContacts = (
         setLoadingContacts(false);
       }
     };
-    getAllUsers();
+    if (fetchContacts) getAllUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const debounceSearch = (
     text: string,
     reset: () => void,
-    filterFn: (query: string) => void
+    filterFn: (query: string) => Promise<void> | void
   ) => {
     const query = text.trimStart();
 
@@ -65,9 +66,9 @@ const useContacts = (
     cancelled.current = false;
 
     if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(() => {
+    debounceTimeout.current = setTimeout(async () => {
       if (cancelled.current) return;
-      filterFn(query);
+      await filterFn(query);
     }, 200);
   };
 
