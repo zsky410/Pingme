@@ -20,7 +20,7 @@ const TextField = ({
           <Text className="w-[108px] font-medium">{label}</Text>
         </View>
       )}
-      <TextInput className="flex-1" {...otherProps} />
+      <TextInput className="flex-1 placeholder:text-gray-400" {...otherProps} />
     </View>
   );
 };

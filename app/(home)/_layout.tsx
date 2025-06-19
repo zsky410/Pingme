@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react';
 import { StreamChat } from 'stream-chat';
 import { Chat, DeepPartial, OverlayProvider, Theme } from 'stream-chat-expo';
 
-import ScreenLoading from '../../components/ScreenLoading';
+import ScreenLoading from '@/components/ScreenLoading';
 
 const tokenProvider = async (userId: string) => {
   const response = await fetch('/token', {
@@ -109,9 +109,7 @@ function HomeLayout() {
         id: clerkUser.id,
         name: clerkUser.fullName!,
         image: clerkUser.hasImage ? clerkUser.imageUrl : undefined,
-        custom: {
-          username: clerkUser.username,
-        },
+        username: clerkUser.username!,
       };
 
       if (!chatClient.user) {
@@ -131,6 +129,11 @@ function HomeLayout() {
     };
 
     if (user) setUpChatAndVideo();
+
+    return () => {
+      chatClient?.disconnectUser();
+      videoClient?.disconnectUser();
+    };
   }, [user, videoClient, chatClient, isSignedIn, router]);
 
   if (loading) return <ScreenLoading />;

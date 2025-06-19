@@ -2,9 +2,9 @@ import { ClerkProvider } from '@clerk/clerk-expo';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SheetProvider } from 'react-native-actions-sheet';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import '../global.css';
 
 export default function RootLayout() {

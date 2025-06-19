@@ -1,11 +1,13 @@
 import { useSignUp } from '@clerk/clerk-expo';
+import clsx from 'clsx';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text, TouchableOpacity, View } from 'react-native';
+import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 
+import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
-import Button from '../../components/Button';
+import { getError } from '@/lib/utils';
 
 function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
@@ -13,61 +15,76 @@ function SignUpScreen() {
 
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
+  const [username, setUsername] = useState('');
+  const [usernameNumber, setUsernameNumber] = useState('');
+  const [numberError, setNumberError] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
 
-  // Handle submission of sign-up form
   const onSignUpPress = async () => {
-    if (!isLoaded) return;
+    if (!isLoaded || numberError) return;
 
-    // Start sign-up process using email and password provided
     try {
+      const finalUsername = `${username}_${usernameNumber}`;
       await signUp.create({
         firstName,
         lastName,
+        username: finalUsername,
         emailAddress: emailAddress.toLowerCase(),
         password,
       });
 
-      // Send user an email with verification code
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
-
-      // Set 'pendingVerification' to true to display second form
-      // and capture OTP code
       setPendingVerification(true);
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      getError(err);
     }
   };
 
-  // Handle submission of verification form
   const onVerifyPress = async () => {
     if (!isLoaded) return;
 
     try {
-      // Use the code the user provided to attempt verification
       const signUpAttempt = await signUp.attemptEmailAddressVerification({
         code,
       });
 
-      // If verification was completed, set the session to active
-      // and redirect the user
       if (signUpAttempt.status === 'complete') {
         await setActive({ session: signUpAttempt.createdSessionId });
         router.replace('/chats');
       } else {
-        // If the status is not complete, check why. User may need to
-        // complete further steps.
         console.error(JSON.stringify(signUpAttempt, null, 2));
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      getError(err);
+    }
+  };
+
+  const onChangeUsername = (text: string) => {
+    setUsername(text);
+    if (!usernameNumber) {
+      const randomNumber = String(Math.floor(Math.random() * 99) + 1).padStart(
+        2,
+        '0'
+      );
+      setUsernameNumber(randomNumber);
+      setNumberError('');
+    }
+  };
+
+  const onChangeNumber = (number: string) => {
+    if (number === '00') return;
+    setUsernameNumber(number);
+
+    const isNumber = /^\d+$/.test(number);
+    const isValid = isNumber && number.length === 2 && number !== '00';
+
+    if (!isValid) {
+      setNumberError('Invalid username, enter a minimum of 2 digits');
+    } else {
+      setNumberError('');
     }
   };
 
@@ -107,28 +124,58 @@ function SignUpScreen() {
           Create an account to get started
         </Text>
       </View>
-      <TextField
-        value={firstName}
-        placeholder="Enter first name"
-        onChangeText={(name) => setFirstName(name)}
-      />
-      <TextField
-        value={lastName}
-        placeholder="Enter last name"
-        onChangeText={(name) => setLastName(name)}
-      />
-      <TextField
-        autoCapitalize="none"
-        value={emailAddress}
-        placeholder="Enter email"
-        onChangeText={(email) => setEmailAddress(email)}
-      />
-      <TextField
-        value={password}
-        placeholder="Enter password"
-        secureTextEntry={true}
-        onChangeText={(password) => setPassword(password)}
-      />
+      <View className="gap-3">
+        <TextField
+          value={firstName}
+          placeholder="First name"
+          onChangeText={(name) => setFirstName(name)}
+        />
+        <TextField
+          value={lastName}
+          placeholder="Last name"
+          onChangeText={(name) => setLastName(name)}
+        />
+        <View className="relative">
+          <TextField
+            autoCapitalize="none"
+            value={username}
+            placeholder="Username"
+            onChangeText={onChangeUsername}
+            className="pr-12"
+          />
+          <View className="absolute right-3 top-3 flex-row gap-2">
+            <View className="w-0.5 h-5 bg-gray-300" />
+            <TextInput
+              keyboardType="number-pad"
+              maxLength={2}
+              value={usernameNumber}
+              onChangeText={onChangeNumber}
+              className="w-5 h-5"
+            />
+          </View>
+          <Text
+            className={clsx(
+              'pl-2 pt-2 text-xs',
+              numberError ? 'text-red-500' : 'text-gray-500'
+            )}
+          >
+            {numberError ||
+              'Usernames are always paired with a set of numbers.'}
+          </Text>
+        </View>
+        <TextField
+          autoCapitalize="none"
+          value={emailAddress}
+          placeholder="Email address"
+          onChangeText={(email) => setEmailAddress(email)}
+        />
+        <TextField
+          value={password}
+          placeholder="Password"
+          secureTextEntry={true}
+          onChangeText={(password) => setPassword(password)}
+        />
+      </View>
       <Button onPress={onSignUpPress}>
         <Text>Continue</Text>
       </Button>

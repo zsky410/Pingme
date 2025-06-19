@@ -1,11 +1,29 @@
-import { Link } from 'expo-router';
+import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
 import { Text, View } from 'react-native';
 
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
-import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
+import { useChatContext } from 'stream-chat-expo';
+import Spinner from '../../../components/Spinner';
+import UserCard from '../../../components/UserCard';
+import useContacts from '../../../hooks/useContacts';
 
 const NewMessageScreen = () => {
+  const router = useRouter();
+  const { client } = useChatContext();
+  const { contacts, loadingContacts } = useContacts(client);
+
+  const onSelectUser = async (userId: string) => {
+    const channel = client.getChannelByMembers('messaging', {
+      members: [client.userID!, userId],
+    });
+    router.dismissTo({
+      pathname: '/chat/[id]',
+      params: { id: channel.id! },
+    });
+  };
+
   return (
     <Screen viewClassName="px-4 pt-1">
       <View className="w-full">
@@ -42,6 +60,22 @@ const NewMessageScreen = () => {
           </Button>
         </Link>
       </View>
+      {loadingContacts && (
+        <View className="flex items-center justify-center py-4">
+          <Spinner />
+        </View>
+      )}
+      {!loadingContacts && contacts.length > 0 && (
+        <View className="flex flex-col gap-2 mt-4">
+          {contacts.map((contact) => (
+            <UserCard
+              key={contact.id}
+              user={contact}
+              onPress={() => onSelectUser(contact.id)}
+            />
+          ))}
+        </View>
+      )}
     </Screen>
   );
 };

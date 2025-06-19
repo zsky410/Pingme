@@ -3,9 +3,10 @@ import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 
+import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
-import Button from '../../components/Button';
+import { getError } from '@/lib/utils';
 
 function SignInScreen() {
   const { signIn, setActive, isLoaded } = useSignIn();
@@ -14,11 +15,9 @@ function SignInScreen() {
   const [emailAddress, setEmailAddress] = useState('');
   const [password, setPassword] = useState('');
 
-  // Handle the submission of the sign-in form
   const onSignInPress = async () => {
     if (!isLoaded) return;
 
-    // Start the sign-in process using the email and password provided
     try {
       const signInAttempt = await signIn.create({
         identifier: emailAddress,
@@ -33,12 +32,10 @@ function SignInScreen() {
       } else {
         // If the status isn't complete, check why. User might need to
         // complete further steps.
-        console.error(JSON.stringify(signInAttempt, null, 2));
+        alert('State incomplete');
       }
     } catch (err) {
-      // See https://clerk.com/docs/custom-flows/error-handling
-      // for more info on error handling
-      console.error(JSON.stringify(err, null, 2));
+      getError(err);
     }
   };
 

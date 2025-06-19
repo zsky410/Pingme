@@ -1,19 +1,17 @@
-import { useUser } from '@clerk/clerk-expo';
 import Feather from '@expo/vector-icons/Feather';
 import { Link, useRouter } from 'expo-router';
 import { View } from 'react-native';
 import { Channel } from 'stream-chat';
 import { ChannelList, useChatContext } from 'stream-chat-expo';
 
-import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
+import AppMenu from '../../../components/AppMenu';
 import PreviewAvatar from '../../../components/PreviewAvatar';
 import ScreenLoading from '../../../components/ScreenLoading';
 
 export default function HomeScreen() {
   const { client } = useChatContext();
-  const { user } = useUser();
   const router = useRouter();
 
   const goToChannel = (channel: Channel) => {
@@ -25,13 +23,8 @@ export default function HomeScreen() {
 
   return (
     <Screen className="bg-white" viewClassName="px-4">
-      <View className="relative flex flex-row items-center justify-between w-full h-10">
-        <Avatar
-          imageUrl={user?.imageUrl}
-          size={24}
-          fontSize={12}
-          name="TropicolX"
-        />
+      <View className="flex flex-row items-center justify-between w-full h-10">
+        <AppMenu />
         <View className="flex flex-row items-center gap-8">
           <Button variant="plain">
             <Feather name="camera" size={20} />

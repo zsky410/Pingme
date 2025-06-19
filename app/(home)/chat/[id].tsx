@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-expo';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -16,13 +17,12 @@ import AttachButton from '@/components/AttachButton';
 import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import CustomMessageInput from '@/components/CustomMessageInput';
+import MessageAvatar from '@/components/MessageAvatar';
 import MessageListHeader from '@/components/MessageListHeader';
 import Screen from '@/components/Screen';
 import ScreenLoading from '@/components/ScreenLoading';
 import SendButton from '@/components/SendButton';
-import { useUser } from '@clerk/clerk-expo';
-import MessageAvatar from '../../../components/MessageAvatar';
-import { checkIfDMChannel, getChannelName } from '../../../lib/utils';
+import { checkIfDMChannel, getChannelName } from '@/lib/utils';
 
 const myMessageTheme: DeepPartial<Theme> = {
   messageSimple: {
@@ -88,7 +88,7 @@ const ChatScreen = () => {
             <Feather name="video" size={24} color="black" />
           </Button>
           <Button variant="plain" onPress={() => null}>
-            <Ionicons name="call-outline" size={24} color="black" />
+            <Feather name="phone" size={22} color="black" />
           </Button>
         </View>
       </View>

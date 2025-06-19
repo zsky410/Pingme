@@ -1,18 +1,16 @@
-import Checkbox from 'expo-checkbox';
 import { getRandomBytesAsync } from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
-import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import Spinner from '@/components/Spinner';
 import TextField from '@/components/TextField';
+import User from '@/components/User';
 import useContacts from '@/hooks/useContacts';
-import { getLastSeen } from '@/lib/utils';
 
 const NewGroupScreen = () => {
   const { client } = useChatContext();
@@ -140,7 +138,7 @@ const NewGroupScreen = () => {
       {!loadingContacts && users.length > 0 && (
         <View className="flex flex-col gap-2 mt-2">
           {sortedUsers.map((user) => (
-            <UserCheckbox
+            <User
               key={user.id}
               user={user}
               checked={selectedUsers.includes(user.id)}
@@ -159,45 +157,6 @@ const NewGroupScreen = () => {
         {creatingGroup && <ActivityIndicator />}
       </Button>
     </Screen>
-  );
-};
-
-interface UserCheckboxProps {
-  user: UserResponse;
-  checked: boolean;
-  onValueChange: (value: boolean) => void;
-}
-
-const UserCheckbox = ({ user, checked, onValueChange }: UserCheckboxProps) => {
-  return (
-    <Pressable
-      onPress={() => onValueChange(!checked)}
-      className="bg-white flex-row items-center gap-2 py-3 px-4 rounded-xl"
-    >
-      <View className="relative h-10 w-10">
-        <Avatar
-          // @ts-expect-error - names
-          name={user.name || `${user.first_name} ${user.last_name}`}
-          imageUrl={user.image}
-          size={40}
-        />
-      </View>
-      <View>
-        <Text className="text-base leading-5">
-          {/** @ts-expect-error - names */}
-          {user.name || `${user.first_name} ${user.last_name}`}
-        </Text>
-        <Text className="text-sm">{getLastSeen(user.last_active!)}</Text>
-      </View>
-      <View className="flex items-center ml-auto">
-        <Checkbox
-          id={user.id}
-          value={checked}
-          onValueChange={onValueChange}
-          className="size-4 rounded border-2 border-color-borders-input"
-        />
-      </View>
-    </Pressable>
   );
 };
 
