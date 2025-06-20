@@ -5,9 +5,9 @@ import { useMessageInputContext } from 'stream-chat-expo';
 import Button from './Button';
 
 const SendButton = () => {
-  const { sendMessage, text } = useMessageInputContext();
+  const { sendMessage, text, numberOfUploads } = useMessageInputContext();
 
-  if (!text) return null;
+  if (!text && numberOfUploads === 0) return null;
 
   return (
     <Button

@@ -70,7 +70,7 @@ const ChatScreen = () => {
 
   return (
     <Screen className="flex-1 bg-white" viewClassName="pb-safe">
-      <View className="pl-1 pr-4 flex flex-row items-center justify-between w-full h-8">
+      <View className="pl-1 pr-4 pb-1 flex flex-row items-center justify-between w-full h-10">
         <View className="flex flex-row items-center gap-4">
           <Button variant="plain" onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={24} color="black" />
@@ -102,6 +102,7 @@ const ChatScreen = () => {
         SendButton={SendButton}
         EmptyStateIndicator={MessageListHeader}
         MessageAvatar={MessageAvatar}
+        reactionListPosition="bottom"
       >
         <MessageList FooterComponent={MessageListHeader} />
         <CustomMessageInput />
