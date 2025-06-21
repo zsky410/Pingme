@@ -121,7 +121,6 @@ function HomeLayout() {
       };
 
       if (!chatClient.user) {
-        console.log('Connecting chat user:', chatUser);
         await chatClient.connectUser(chatUser, customProvider);
       }
 

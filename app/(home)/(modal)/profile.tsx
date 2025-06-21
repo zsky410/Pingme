@@ -66,7 +66,7 @@ const ProfileScreen = () => {
       alert('Profile updated successfully!');
     } catch (error) {
       getError(error);
-      console.log(error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
