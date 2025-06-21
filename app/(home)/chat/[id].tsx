@@ -14,7 +14,6 @@ import {
 } from 'stream-chat-expo';
 
 import AttachButton from '@/components/AttachButton';
-import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import CustomMessageInput from '@/components/CustomMessageInput';
 import MessageAvatar from '@/components/MessageAvatar';
@@ -23,6 +22,11 @@ import Screen from '@/components/Screen';
 import ScreenLoading from '@/components/ScreenLoading';
 import SendButton from '@/components/SendButton';
 import { checkIfDMChannel, getChannelName } from '@/lib/utils';
+import {
+  useCalls,
+  useStreamVideoClient,
+} from '@stream-io/video-react-native-sdk';
+import PreviewAvatar from '../../../components/PreviewAvatar';
 
 const myMessageTheme: DeepPartial<Theme> = {
   messageSimple: {
@@ -40,6 +44,7 @@ const myMessageTheme: DeepPartial<Theme> = {
 const ChatScreen = () => {
   const { id: channelId } = useLocalSearchParams<{ id: string }>();
   const { client: chatClient } = useChatContext();
+  const videoClient = useStreamVideoClient();
   const { user } = useUser();
   const router = useRouter();
 
@@ -47,6 +52,7 @@ const ChatScreen = () => {
   const [channelName, setChannelName] = useState<string>('');
   const [isDMChannel, setIsDMChannel] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
+  const [activeCall] = useCalls();
 
   const userId = user?.id!;
 
@@ -62,7 +68,23 @@ const ChatScreen = () => {
     };
 
     if (chatClient && !channel) loadChannel();
-  }, [channelId, channel, chatClient, userId]);
+  }, [channelId, channel, chatClient, userId, videoClient]);
+
+  const startAudioCall = async () => {
+    router.navigate({
+      pathname: `/call/[id]`,
+      params: { id: channelId, updateCall: 'true' },
+    });
+  };
+
+  const startVideoCall = async () => {
+    router.navigate({
+      pathname: `/call/[id]`,
+      params: { id: channelId, updateCall: 'true' },
+    });
+  };
+
+  const callIsActive = !!activeCall && activeCall?.id !== channelId;
 
   if (loading) {
     return <ScreenLoading />;
@@ -75,19 +97,22 @@ const ChatScreen = () => {
           <Button variant="plain" onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={24} color="black" />
           </Button>
-          <Avatar
-            placeholderType={isDMChannel ? 'text' : 'icon'}
-            size={28}
-            fontSize={14}
-            name={channelName}
-          />
+          <PreviewAvatar channel={channel!} size={28} fontSize={14} />
           <Text className="text-base font-bold">{channelName}</Text>
         </View>
         <View className="flex flex-row items-center gap-6">
-          <Button variant="plain" onPress={() => null}>
+          <Button
+            variant="plain"
+            onPress={startVideoCall}
+            disabled={callIsActive}
+          >
             <Feather name="video" size={24} color="black" />
           </Button>
-          <Button variant="plain" onPress={() => null}>
+          <Button
+            variant="plain"
+            onPress={startAudioCall}
+            disabled={callIsActive}
+          >
             <Feather name="phone" size={22} color="black" />
           </Button>
         </View>

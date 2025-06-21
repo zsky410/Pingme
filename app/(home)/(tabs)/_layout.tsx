@@ -1,11 +1,32 @@
 import { Ionicons } from '@expo/vector-icons';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { Tabs } from 'expo-router';
+import { useCalls } from '@stream-io/video-react-native-sdk';
+import { Tabs, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 
 import { HapticTab } from '@/components/HapticTab';
 
 function TabLayout() {
+  const router = useRouter();
+  const calls = useCalls().filter((call) => call.ringing);
+
+  const ringingCall = calls[0];
+  const isCallCreatedByMe =
+    ringingCall?.state?.custom.triggeredBy === ringingCall?.currentUserId;
+
+  useEffect(() => {
+    if (isCallCreatedByMe) return;
+    if (ringingCall) {
+      router.navigate({
+        pathname: `/call/[id]`,
+        params: {
+          id: ringingCall.id,
+        },
+      });
+    }
+  }, [ringingCall, isCallCreatedByMe, router]);
+
   return (
     <Tabs
       screenOptions={{

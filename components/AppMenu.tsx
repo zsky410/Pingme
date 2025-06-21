@@ -28,9 +28,9 @@ const AppMenu = () => {
     }
   };
 
-  const goToSettings = () => {
+  const goToProfile = () => {
     setMenuVisible(false);
-    // router.push("/settings");
+    router.push('/profile');
   };
 
   const handleSignOut = async () => {
@@ -70,10 +70,10 @@ const AppMenu = () => {
             <Button
               variant="plain"
               className="flex-row items-center justify-between py-2 px-3 border-b border-gray-200"
-              onPress={goToSettings}
+              onPress={goToProfile}
             >
-              <Text>Settings</Text>
-              <Feather name="settings" size={20} color="black" />
+              <Text>Profile</Text>
+              <Feather name="user" size={20} color="black" />
             </Button>
             <Button
               variant="plain"

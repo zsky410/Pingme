@@ -1,26 +1,31 @@
-import { useUser } from '@clerk/clerk-expo';
-import { ChannelAvatarProps } from 'stream-chat-expo';
+import {
+  ChannelAvatarProps,
+  useChannelPreviewDisplayAvatar,
+} from 'stream-chat-expo';
 
-import { checkIfDMChannel, getChannelName } from '@/lib/utils';
+import { checkIfDMChannel } from '@/lib/utils';
 import Avatar from './Avatar';
 
-const PreviewAvatar = ({ channel, size }: ChannelAvatarProps) => {
-  const { user } = useUser();
+export interface PreviewAvatarProps extends ChannelAvatarProps {
+  size?: number;
+  fontSize?: number;
+}
 
-  const userId = user?.id!;
-  const channelName = getChannelName(channel, userId);
+const PreviewAvatar = ({
+  channel,
+  size = 44,
+  fontSize = 20,
+}: PreviewAvatarProps) => {
   const isDMChannel = checkIfDMChannel(channel);
-
-  // @ts-expect-error - channel?.data?.image can be undefined
-  const channelImage = channel?.data?.image;
+  const displayAvatar = useChannelPreviewDisplayAvatar(channel);
   const placeholderType = isDMChannel ? 'text' : 'icon';
 
   return (
     <Avatar
-      size={44}
-      name={channelName}
-      fontSize={20}
-      imageUrl={channelImage}
+      size={size}
+      name={displayAvatar.name!}
+      fontSize={fontSize}
+      imageUrl={isDMChannel ? displayAvatar.image : undefined}
       placeholderType={placeholderType}
     />
   );

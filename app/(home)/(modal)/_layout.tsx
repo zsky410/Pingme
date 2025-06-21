@@ -1,3 +1,4 @@
+import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
 
 import Button from '@/components/Button';
@@ -12,6 +13,21 @@ const NewMessageLayout = () => {
         headerBackButtonDisplayMode: 'minimal',
       }}
     >
+      <Stack.Screen
+        name="profile"
+        options={{
+          title: 'Profile',
+          headerLeft: () => (
+            <Button
+              variant="plain"
+              onPress={() => router.dismissAll()}
+              className="right-4"
+            >
+              <Feather name="chevron-left" size={32} />
+            </Button>
+          ),
+        }}
+      />
       <Stack.Screen
         name="new-message"
         options={{

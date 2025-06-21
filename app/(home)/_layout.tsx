@@ -6,7 +6,12 @@ import {
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { StreamChat } from 'stream-chat';
-import { Chat, DeepPartial, OverlayProvider, Theme } from 'stream-chat-expo';
+import {
+  Chat,
+  DeepPartial as ChatDeepPartial,
+  Theme as ChatTheme,
+  OverlayProvider,
+} from 'stream-chat-expo';
 
 import ScreenLoading from '@/components/ScreenLoading';
 
@@ -22,7 +27,7 @@ const tokenProvider = async (userId: string) => {
   return data.token;
 };
 
-const theme: DeepPartial<Theme> = {
+const chatTheme: ChatDeepPartial<ChatTheme> = {
   colors: {
     white_snow: 'white',
   },
@@ -134,8 +139,10 @@ function HomeLayout() {
     if (user) setUpChatAndVideo();
 
     return () => {
-      chatClient?.disconnectUser();
-      videoClient?.disconnectUser();
+      if (!isSignedIn) {
+        chatClient?.disconnectUser();
+        videoClient?.disconnectUser();
+      }
     };
   }, [user, videoClient, chatClient, isSignedIn, router]);
 
@@ -143,7 +150,7 @@ function HomeLayout() {
 
   return (
     <OverlayProvider>
-      <Chat client={chatClient!} style={theme}>
+      <Chat client={chatClient!} style={chatTheme}>
         <StreamVideo client={videoClient!}>
           <Stack>
             <Stack.Screen
@@ -163,6 +170,13 @@ function HomeLayout() {
               name="chat/[id]"
               options={{
                 headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="call/[id]"
+              options={{
+                headerShown: false,
+                animation: 'none',
               }}
             />
           </Stack>

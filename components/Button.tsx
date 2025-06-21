@@ -32,6 +32,7 @@ function Button({
         variant === 'default' &&
           'bg-blue-600 rounded-[13px] justify-center items-center px-4 py-4 w-full',
         variant === 'text' && 'bg-transparent justify-center items-center',
+        otherProps.disabled && 'opacity-50',
         className
       )}
       onPress={onPress}

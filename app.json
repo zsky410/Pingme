@@ -74,7 +74,14 @@
         }
       ],
       "expo-build-properties",
-      "expo-video"
+      "expo-video",
+      [
+        "@stream-io/video-react-native-sdk",
+        {
+          "iOSEnableMultitaskingCameraAccess": true,
+          "androidPictureInPicture": true
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
