@@ -10,7 +10,7 @@ import PreviewAvatar from '@/components/PreviewAvatar';
 import Screen from '@/components/Screen';
 import ScreenLoading from '@/components/ScreenLoading';
 
-export default function HomeScreen() {
+const ChatsScreen = () => {
   const { client } = useChatContext();
   const router = useRouter();
 
@@ -48,4 +48,6 @@ export default function HomeScreen() {
       />
     </Screen>
   );
-}
+};
+
+export default ChatsScreen;

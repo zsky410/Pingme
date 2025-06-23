@@ -5,7 +5,7 @@ import AppMenu from '@/components/AppMenu';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 
-function CallsScreen() {
+const CallsScreen = () => {
   return (
     <Screen className="bg-white" viewClassName="px-4 items-start">
       <View className="flex flex-row items-center justify-between w-full h-10">
@@ -31,6 +31,6 @@ function CallsScreen() {
       </View>
     </Screen>
   );
-}
+};
 
 export default CallsScreen;

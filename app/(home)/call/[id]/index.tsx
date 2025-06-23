@@ -125,4 +125,5 @@ const CallScreen = () => {
     </StreamTheme>
   );
 };
+
 export default CallScreen;

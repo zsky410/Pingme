@@ -7,7 +7,7 @@ import { useEffect } from 'react';
 
 import { HapticTab } from '@/components/HapticTab';
 
-function TabLayout() {
+const TabsLayout = () => {
   const router = useRouter();
   const calls = useCalls().filter((call) => call.ringing);
 
@@ -30,7 +30,6 @@ function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        // tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         tabBarActiveTintColor: 'black',
         tabBarButton: HapticTab,
         tabBarStyle: {
@@ -69,6 +68,6 @@ function TabLayout() {
       />
     </Tabs>
   );
-}
+};
 
-export default TabLayout;
+export default TabsLayout;

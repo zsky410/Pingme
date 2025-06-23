@@ -8,7 +8,7 @@ import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
 import { getError } from '@/lib/utils';
 
-function SignInScreen() {
+const SignInScreen = () => {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
 
@@ -73,6 +73,6 @@ function SignInScreen() {
       </View>
     </Screen>
   );
-}
+};
 
 export default SignInScreen;

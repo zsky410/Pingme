@@ -93,7 +93,7 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
 
 const API_KEY = process.env.EXPO_PUBLIC_STREAM_API_KEY as string;
 
-function HomeLayout() {
+const HomeLayout = () => {
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const [loading, setLoading] = useState(true);
@@ -183,6 +183,6 @@ function HomeLayout() {
       </Chat>
     </OverlayProvider>
   );
-}
+};
 
 export default HomeLayout;

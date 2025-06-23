@@ -7,7 +7,7 @@ import Avatar from '@/components/Avatar';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 
-function StoriesScreen() {
+const StoriesScreen = () => {
   const { user } = useUser();
 
   return (
@@ -39,6 +39,6 @@ function StoriesScreen() {
       </Button>
     </Screen>
   );
-}
+};
 
 export default StoriesScreen;

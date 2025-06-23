@@ -10,7 +10,7 @@ import TextField from '@/components/TextField';
 import useUserForm from '@/hooks/useUserForm';
 import { getError } from '@/lib/utils';
 
-function SignUpScreen() {
+const SignUpScreen = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
   const {
@@ -175,6 +175,6 @@ function SignUpScreen() {
       </View>
     </Screen>
   );
-}
+};
 
 export default SignUpScreen;

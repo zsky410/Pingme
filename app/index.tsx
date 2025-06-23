@@ -6,7 +6,7 @@ import AppImage from '@/components/AppImage';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 
-export default function Page() {
+const WelcomeScreen = () => {
   const { isLoaded, isSignedIn } = useUser();
   const router = useRouter();
 
@@ -40,4 +40,6 @@ export default function Page() {
       <Button onPress={() => router.navigate('/sign-in')}>Continue</Button>
     </Screen>
   );
-}
+};
+
+export default WelcomeScreen;

@@ -7,7 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import '../global.css';
 
-export default function RootLayout() {
+const RootLayout = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SheetProvider context="global">
@@ -25,4 +25,6 @@ export default function RootLayout() {
       </SheetProvider>
     </GestureHandlerRootView>
   );
-}
+};
+
+export default RootLayout;
