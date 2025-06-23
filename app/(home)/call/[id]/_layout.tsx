@@ -8,8 +8,8 @@ import { Stack, useGlobalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { useChatContext } from 'stream-chat-expo';
 
-import ScreenLoading from '../../../../components/ScreenLoading';
-import { checkIfDMChannel } from '../../../../lib/utils';
+import ScreenLoading from '@/components/ScreenLoading';
+import { checkIfDMChannel } from '@/lib/utils';
 
 const CallLayout = () => {
   const { id, updateCall } = useGlobalSearchParams();

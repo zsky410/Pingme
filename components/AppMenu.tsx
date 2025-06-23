@@ -1,9 +1,10 @@
 import { useClerk, useUser } from '@clerk/clerk-expo';
+import { Feather } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { Feather } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { getError } from '../lib/utils';
 import Avatar from './Avatar';
 import Button from './Button';
 
@@ -39,7 +40,7 @@ const AppMenu = () => {
       await signOut();
       router.replace('/');
     } catch (err) {
-      console.error(JSON.stringify(err, null, 2));
+      getError(err);
     }
   };
 

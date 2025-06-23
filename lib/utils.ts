@@ -17,14 +17,3 @@ export const getDMUser = (channel: Channel, userId: string) => {
   delete members[userId];
   return Object.values(members)[0].user!;
 };
-
-export const getChannelName = (channel: Channel, userId: string) => {
-  if (checkIfDMChannel(channel)) {
-    const member = getDMUser(channel, userId)!;
-    // @ts-expect-error - channel?.data?.name can be undefined
-    return member.name || `${member.first_name} ${member.last_name}`;
-  } else {
-    // @ts-expect-error - channel?.data?.name can be undefined
-    return channel?.data?.name as string;
-  }
-};

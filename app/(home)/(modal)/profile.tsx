@@ -4,31 +4,48 @@ import { ImagePickerAsset } from 'expo-image-picker';
 import { useState } from 'react';
 import { Text, TextInput, View } from 'react-native';
 import { useChatContext } from 'stream-chat-expo';
-import Button from '../../../components/Button';
-import ImageInput from '../../../components/ImageInput';
-import Screen from '../../../components/Screen';
-import TextField from '../../../components/TextField';
-import { getError } from '../../../lib/utils';
+
+import Button from '@/components/Button';
+import ImageInput from '@/components/ImageInput';
+import Screen from '@/components/Screen';
+import TextField from '@/components/TextField';
+import useUserForm from '@/hooks/useUserForm';
+import { getError } from '@/lib/utils';
 
 const ProfileScreen = () => {
   const { user } = useUser();
   const { client } = useChatContext();
   const clerk = useClerk();
+  const usernameParts = user?.username?.split('_')!;
+  const initialFormValues = {
+    firstName: user?.firstName!,
+    lastName: user?.lastName!,
+    username: usernameParts[0],
+    usernameNumber: usernameParts[1],
+  };
   const defaultImage: ImagePickerAsset = {
     uri: user?.hasImage ? user?.imageUrl : '',
     width: 100,
     height: 100,
   };
 
-  const usernameParts = user?.username?.split('_')!;
-  const [username, setUsername] = useState(usernameParts[0]);
-  const [usernameNumber, setUsernameNumber] = useState(usernameParts[1]);
-  const [firstName, setFirstName] = useState(user?.firstName!);
-  const [lastName, setLastName] = useState(user?.lastName!);
+  const {
+    firstName,
+    lastName,
+    username,
+    usernameNumber,
+    numberError,
+    onChangeFirstName,
+    onChangeLastName,
+    onChangeUsername,
+    onChangeNumber,
+  } = useUserForm(initialFormValues);
   const [profileImage, setProfileImage] =
     useState<ImagePickerAsset>(defaultImage);
-  const [numberError, setNumberError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const submitDisabled =
+    loading || !username || !usernameNumber || !firstName || !lastName;
 
   const updateProfile = async () => {
     try {
@@ -40,19 +57,13 @@ const ProfileScreen = () => {
         username: finalUsername,
       });
 
-      let imageResult:
-        | { id?: string; name: string | null; publicUrl: string | null }
-        | undefined;
-
-      // get base64 from uri
       const response = await fetch(profileImage.uri);
       const blob = await response.blob();
-      // Convert blob to base64
       const reader = new FileReader();
       reader.readAsDataURL(blob);
       reader.onloadend = async () => {
         const base64data = reader.result as string;
-        imageResult = await clerk.user?.setProfileImage({
+        const imageResult = await clerk.user?.setProfileImage({
           file: base64data,
         });
         await client.upsertUser({
@@ -72,20 +83,6 @@ const ProfileScreen = () => {
     }
   };
 
-  const onChangeNumber = (number: string) => {
-    if (number === '00') return;
-    setUsernameNumber(number);
-
-    const isNumber = /^\d+$/.test(number);
-    const isValid = isNumber && number.length === 2 && number !== '00';
-
-    if (!isValid) {
-      setNumberError('Invalid username, enter a minimum of 2 digits');
-    } else {
-      setNumberError('');
-    }
-  };
-
   return (
     <Screen
       viewClassName="pt-1 px-4 items-center gap-6"
@@ -102,19 +99,19 @@ const ProfileScreen = () => {
         <TextField
           value={firstName}
           placeholder="First name"
-          onChangeText={(name) => setFirstName(name)}
+          onChangeText={onChangeFirstName}
         />
         <TextField
           value={lastName}
           placeholder="Last name"
-          onChangeText={(name) => setLastName(name)}
+          onChangeText={onChangeLastName}
         />
         <View className="relative">
           <TextField
             autoCapitalize="none"
             value={username}
             placeholder="Username"
-            onChangeText={(name) => setUsername(name)}
+            onChangeText={onChangeUsername}
             className="pr-12"
           />
           <View className="absolute right-3 top-3 flex-row gap-2">
@@ -138,12 +135,7 @@ const ProfileScreen = () => {
           </Text>
         </View>
       </View>
-      <Button
-        onPress={updateProfile}
-        disabled={
-          loading || !username || !usernameNumber || !firstName || !lastName
-        }
-      >
+      <Button onPress={updateProfile} disabled={submitDisabled}>
         Save
       </Button>
     </Screen>

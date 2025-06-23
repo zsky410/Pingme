@@ -27,6 +27,7 @@ const svgContainerStyle = {
   borderRadius: 24,
 };
 
+// @ts-expect-error
 const theme: DeepPartial<Theme> = {
   colors: {
     buttonSecondary: '#373737',

@@ -1,9 +1,13 @@
 import { useUser } from '@clerk/clerk-expo';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import {
+  useCalls,
+  useStreamVideoClient,
+} from '@stream-io/video-react-native-sdk';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { Channel as ChannelType } from 'stream-chat';
 import {
   Channel,
@@ -15,18 +19,14 @@ import {
 
 import AttachButton from '@/components/AttachButton';
 import Button from '@/components/Button';
+import ChannelTitle from '@/components/ChannelTitle';
 import CustomMessageInput from '@/components/CustomMessageInput';
 import MessageAvatar from '@/components/MessageAvatar';
 import MessageListHeader from '@/components/MessageListHeader';
+import PreviewAvatar from '@/components/PreviewAvatar';
 import Screen from '@/components/Screen';
 import ScreenLoading from '@/components/ScreenLoading';
 import SendButton from '@/components/SendButton';
-import { checkIfDMChannel, getChannelName } from '@/lib/utils';
-import {
-  useCalls,
-  useStreamVideoClient,
-} from '@stream-io/video-react-native-sdk';
-import PreviewAvatar from '../../../components/PreviewAvatar';
 
 const myMessageTheme: DeepPartial<Theme> = {
   messageSimple: {
@@ -49,8 +49,6 @@ const ChatScreen = () => {
   const router = useRouter();
 
   const [channel, setChannel] = useState<ChannelType>();
-  const [channelName, setChannelName] = useState<string>('');
-  const [isDMChannel, setIsDMChannel] = useState<boolean>(false);
   const [loading, setLoading] = useState(true);
   const [activeCall] = useCalls();
 
@@ -62,8 +60,6 @@ const ChatScreen = () => {
       await channel.watch();
 
       setChannel(channel);
-      setChannelName(getChannelName(channel, userId));
-      setIsDMChannel(checkIfDMChannel(channel));
       setLoading(false);
     };
 
@@ -98,7 +94,7 @@ const ChatScreen = () => {
             <Ionicons name="chevron-back" size={24} color="black" />
           </Button>
           <PreviewAvatar channel={channel!} size={28} fontSize={14} />
-          <Text className="text-base font-bold">{channelName}</Text>
+          <ChannelTitle channel={channel!} />
         </View>
         <View className="flex flex-row items-center gap-6">
           <Button

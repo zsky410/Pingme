@@ -1,6 +1,7 @@
 import { Feather } from '@expo/vector-icons';
 import clsx from 'clsx';
 import { AttachButtonProps, useMessageInputContext } from 'stream-chat-expo';
+
 import Button from './Button';
 
 const AttachButton = ({ disabled }: AttachButtonProps) => {

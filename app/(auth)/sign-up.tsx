@@ -7,19 +7,27 @@ import { Text, TextInput, View } from 'react-native';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
+import useUserForm from '@/hooks/useUserForm';
 import { getError } from '@/lib/utils';
 
 function SignUpScreen() {
   const { isLoaded, signUp, setActive } = useSignUp();
   const router = useRouter();
-
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [username, setUsername] = useState('');
-  const [usernameNumber, setUsernameNumber] = useState('');
-  const [numberError, setNumberError] = useState('');
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const {
+    firstName,
+    lastName,
+    username,
+    usernameNumber,
+    numberError,
+    emailAddress,
+    password,
+    onChangeFirstName,
+    onChangeLastName,
+    onChangeUsername,
+    onChangeNumber,
+    onChangeEmailAddress,
+    onChangePassword,
+  } = useUserForm();
   const [pendingVerification, setPendingVerification] = useState(false);
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -67,32 +75,6 @@ function SignUpScreen() {
     }
   };
 
-  const onChangeUsername = (text: string) => {
-    setUsername(text);
-    if (!usernameNumber) {
-      const randomNumber = String(Math.floor(Math.random() * 99) + 1).padStart(
-        2,
-        '0'
-      );
-      setUsernameNumber(randomNumber);
-      setNumberError('');
-    }
-  };
-
-  const onChangeNumber = (number: string) => {
-    if (number === '00') return;
-    setUsernameNumber(number);
-
-    const isNumber = /^\d+$/.test(number);
-    const isValid = isNumber && number.length === 2 && number !== '00';
-
-    if (!isValid) {
-      setNumberError('Invalid username, enter a minimum of 2 digits');
-    } else {
-      setNumberError('');
-    }
-  };
-
   if (pendingVerification) {
     return (
       <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
@@ -134,12 +116,12 @@ function SignUpScreen() {
         <TextField
           value={firstName}
           placeholder="First name"
-          onChangeText={(name) => setFirstName(name)}
+          onChangeText={onChangeFirstName}
         />
         <TextField
           value={lastName}
           placeholder="Last name"
-          onChangeText={(name) => setLastName(name)}
+          onChangeText={onChangeLastName}
         />
         <View className="relative">
           <TextField
@@ -173,13 +155,13 @@ function SignUpScreen() {
           autoCapitalize="none"
           value={emailAddress}
           placeholder="Email address"
-          onChangeText={(email) => setEmailAddress(email)}
+          onChangeText={onChangeEmailAddress}
         />
         <TextField
           value={password}
           placeholder="Password"
           secureTextEntry={true}
-          onChangeText={(password) => setPassword(password)}
+          onChangeText={onChangePassword}
         />
       </View>
       <Button onPress={onSignUpPress}>

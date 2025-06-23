@@ -8,13 +8,13 @@ interface ButtonProps extends React.ComponentProps<typeof TouchableOpacity> {
   variant?: 'plain' | 'default' | 'text';
 }
 
-function Button({
+const Button = ({
   onPress,
   children,
   className,
   variant = 'default',
   ...otherProps
-}: ButtonProps) {
+}: ButtonProps) => {
   if (variant === 'plain')
     return (
       <TouchableOpacity
@@ -48,6 +48,6 @@ function Button({
       </Text>
     </TouchableOpacity>
   );
-}
+};
 
 export default Button;
