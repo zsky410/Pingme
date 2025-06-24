@@ -1,5 +1,5 @@
 {
-  "name": "slack-clone-1",
+  "name": "signal-clone",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
@@ -49,11 +49,11 @@
     "expo-system-ui": "~5.0.7",
     "expo-video": "~2.2.1",
     "expo-web-browser": "~14.1.6",
+    "nanoid": "^5.1.5",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
-    "react-native-actions-sheet": "^0.9.7",
     "react-native-gesture-handler": "^2.25.0",
     "react-native-incall-manager": "^4.2.1",
     "react-native-reanimated": "~3.17.4",
