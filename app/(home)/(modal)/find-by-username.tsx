@@ -65,7 +65,7 @@ const FindByUsernameScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-1 px-4 gap-4">
+    <Screen viewClassName="pt-1 android:pt-14 px-4 gap-4">
       <TextField
         id="username"
         placeholder="Username"

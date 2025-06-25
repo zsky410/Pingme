@@ -19,7 +19,7 @@ const WelcomeScreen = () => {
   return (
     <Screen
       className="bg-white"
-      viewClassName="px-14 pb-10 w-full items-center justify-end gap-16"
+      viewClassName="px-10 pb-10 w-full items-center justify-end gap-16"
     >
       <AppImage
         source={require('@/assets/images/onboarding_splash_Normal.png')}

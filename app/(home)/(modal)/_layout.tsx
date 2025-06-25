@@ -11,6 +11,7 @@ const NewMessageLayout = () => {
         headerTransparent: true,
         headerTintColor: 'black',
         headerBackButtonDisplayMode: 'minimal',
+        headerTitleAlign: 'center',
       }}
     >
       <Stack.Screen
@@ -20,7 +21,7 @@ const NewMessageLayout = () => {
           headerLeft: () => (
             <Button
               variant="plain"
-              onPress={() => router.dismissAll()}
+              onPress={() => router.back()}
               className="right-4"
             >
               <Feather name="chevron-left" size={32} />
@@ -33,7 +34,7 @@ const NewMessageLayout = () => {
         options={{
           title: 'New Message',
           headerLeft: () => (
-            <Button variant="text" onPress={() => router.dismissAll()}>
+            <Button variant="text" onPress={() => router.back()}>
               Cancel
             </Button>
           ),

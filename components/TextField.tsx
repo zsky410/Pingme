@@ -13,14 +13,17 @@ const TextField = ({
   return (
     <View
       style={{ width }}
-      className="relative px-4 flex-row bg-white items-center justify-between rounded-xl py-3 border border-white"
+      className="relative px-4 flex-row bg-white items-center justify-between rounded-xl py-3 android:py-0 border border-white"
     >
       {label && (
         <View>
           <Text className="w-[108px] font-medium">{label}</Text>
         </View>
       )}
-      <TextInput className="flex-1 placeholder:text-gray-400" {...otherProps} />
+      <TextInput
+        className="flex-1 placeholder:text-gray-400 text-black"
+        {...otherProps}
+      />
     </View>
   );
 };

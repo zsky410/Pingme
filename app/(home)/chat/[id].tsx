@@ -116,7 +116,8 @@ const ChatScreen = () => {
       <Channel
         myMessageTheme={myMessageTheme}
         channel={channel!}
-        keyboardVerticalOffset={70}
+        keyboardVerticalOffset={60}
+        keyboardBehavior="padding"
         autoCompleteTriggerSettings={() => ({})}
         hasCommands={false}
         AttachButton={AttachButton}

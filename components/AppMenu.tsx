@@ -49,7 +49,7 @@ const AppMenu = () => {
       <Button variant="plain" ref={avatarRef} onPress={toggleMenu}>
         <Avatar
           imageUrl={user?.imageUrl}
-          size={24}
+          size={28}
           fontSize={12}
           name={user?.fullName!}
         />

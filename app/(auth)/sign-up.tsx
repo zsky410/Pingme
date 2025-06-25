@@ -138,7 +138,7 @@ const SignUpScreen = () => {
               maxLength={2}
               value={usernameNumber}
               onChangeText={onChangeNumber}
-              className="w-5 h-5"
+              className="w-5 h-5 android:w-8 android:h-12 android:bottom-3.5"
             />
           </View>
           <Text

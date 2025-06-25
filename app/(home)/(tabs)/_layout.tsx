@@ -37,6 +37,7 @@ const TabsLayout = () => {
           borderTopColor: 'white',
         },
         headerTransparent: true,
+        headerTitleAlign: 'center',
       }}
     >
       <Tabs.Screen
