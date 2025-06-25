@@ -6,14 +6,15 @@ import { Text, View } from 'react-native';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import TextField from '@/components/TextField';
+import useUserForm from '@/hooks/useUserForm';
 import { getError } from '@/lib/utils';
 
 const SignInScreen = () => {
   const { signIn, setActive, isLoaded } = useSignIn();
   const router = useRouter();
 
-  const [emailAddress, setEmailAddress] = useState('');
-  const [password, setPassword] = useState('');
+  const { emailAddress, password, onChangeEmailAddress, onChangePassword } =
+    useUserForm();
   const [loading, setLoading] = useState(false);
 
   const onSignInPress = async () => {
@@ -25,14 +26,10 @@ const SignInScreen = () => {
         password,
       });
 
-      // If sign-in process is complete, set the created session as active
-      // and redirect the user
       if (signInAttempt.status === 'complete') {
         await setActive({ session: signInAttempt.createdSessionId });
         router.replace('/chats');
       } else {
-        // If the status isn't complete, check why. User might need to
-        // complete further steps.
         alert('State incomplete');
       }
     } catch (err) {
@@ -54,18 +51,16 @@ const SignInScreen = () => {
         autoCapitalize="none"
         value={emailAddress}
         placeholder="Enter email"
-        onChangeText={(emailAddress) => setEmailAddress(emailAddress)}
+        onChangeText={onChangeEmailAddress}
       />
       <TextField
         value={password}
         placeholder="Enter password"
         secureTextEntry={true}
-        onChangeText={(password) => setPassword(password)}
+        onChangeText={onChangePassword}
       />
-      <Button onPress={onSignInPress}>
-        <Text>Continue</Text>
-      </Button>
-      <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+      <Button onPress={onSignInPress}>Continue</Button>
+      <View className="flex-row gap-[3px]">
         <Text>Don&apos;t have an account?</Text>
         <Link href="/sign-up">
           <Text className="text-blue-600">Sign up</Text>

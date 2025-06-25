@@ -37,7 +37,7 @@ const WelcomeScreen = () => {
         </View>
         <Text className="text-base text-gray-500">Terms & Privacy Policy</Text>
       </View>
-      <Button onPress={() => router.navigate('/sign-in')}>Continue</Button>
+      <Button onPress={() => router.navigate('/sign-up')}>Continue</Button>
     </Screen>
   );
 };

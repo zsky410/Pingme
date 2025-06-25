@@ -44,7 +44,6 @@ const SignUpScreen = () => {
         emailAddress: emailAddress.toLowerCase(),
         password,
       });
-
       await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
       setPendingVerification(true);
     } catch (err) {
@@ -85,10 +84,12 @@ const SignUpScreen = () => {
           <Text className="text-center text-base text-gray-500">
             Enter the code we sent to {emailAddress.toLowerCase()}
           </Text>
-          <Button variant="plain" onPress={() => setPendingVerification(false)}>
-            <Text className="text-base text-center text-blue-600">
-              Wrong email?
-            </Text>
+          <Button
+            variant="text"
+            className="text-base text-blue-600"
+            onPress={() => setPendingVerification(false)}
+          >
+            Wrong email?
           </Button>
         </View>
         <TextField
@@ -97,9 +98,7 @@ const SignUpScreen = () => {
           keyboardType="numeric"
           onChangeText={(code) => setCode(code)}
         />
-        <Button onPress={onVerifyPress}>
-          <Text>Verify</Text>
-        </Button>
+        <Button onPress={onVerifyPress}>Verify</Button>
       </Screen>
     );
   }
@@ -164,10 +163,8 @@ const SignUpScreen = () => {
           onChangeText={onChangePassword}
         />
       </View>
-      <Button onPress={onSignUpPress}>
-        <Text>Continue</Text>
-      </Button>
-      <View style={{ display: 'flex', flexDirection: 'row', gap: 3 }}>
+      <Button onPress={onSignUpPress}>Continue</Button>
+      <View className="flex-row gap-[3px]">
         <Text>Already have an account?</Text>
         <Link href="/sign-in">
           <Text className="text-blue-600">Sign in</Text>

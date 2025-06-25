@@ -33,7 +33,7 @@ const Button = ({
           'bg-blue-600 rounded-[13px] justify-center items-center px-4 py-4 w-full',
         variant === 'text' && 'bg-transparent justify-center items-center',
         otherProps.disabled && 'opacity-50',
-        className
+        variant !== 'text' && className
       )}
       onPress={onPress}
       {...otherProps}
@@ -41,7 +41,8 @@ const Button = ({
       <Text
         className={clsx(
           variant === 'default' && 'text-[17px] font-medium text-white',
-          variant === 'text' && 'text-sm text-black'
+          variant === 'text' && 'text-sm text-black',
+          variant === 'text' && className
         )}
       >
         {children}
