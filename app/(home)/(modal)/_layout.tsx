@@ -8,7 +8,7 @@ const NewMessageLayout = () => {
   return (
     <Stack
       screenOptions={{
-        headerTransparent: true,
+        headerBackground: () => null,
         headerTintColor: 'black',
         headerBackButtonDisplayMode: 'minimal',
         headerTitleAlign: 'center',
