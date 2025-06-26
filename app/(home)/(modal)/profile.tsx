@@ -85,16 +85,21 @@ const ProfileScreen = () => {
 
   return (
     <Screen
-      viewClassName="pt-1 android:pt-14 px-4 items-center gap-6"
+      viewClassName="pt-3 android:pt-14 px-4 items-center gap-6"
       loadingOverlay={loading}
     >
-      <ImageInput
-        name={user?.fullName!}
-        imageUri={profileImage.uri}
-        onChangeImage={(asset) =>
-          setProfileImage(asset ?? { ...defaultImage, uri: '' })
-        }
-      />
+      <View className="items-center gap-3">
+        <ImageInput
+          name={user?.fullName!}
+          imageUri={profileImage.uri}
+          onChangeImage={(asset) =>
+            setProfileImage(asset ?? { ...defaultImage, uri: '' })
+          }
+        />
+        <Text className="text-sm text-gray-400">
+          {username ? `${username}_${usernameNumber}` : 'Choose your username'}
+        </Text>
+      </View>
       <View className="gap-3">
         <TextField
           value={firstName}
