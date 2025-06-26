@@ -110,7 +110,7 @@ const HomeLayout = () => {
       return token;
     };
 
-    const setUpChatAndVideo = async () => {
+    const setUpStream = async () => {
       const chatClient = StreamChat.getInstance(API_KEY);
       const clerkUser = user!;
       const chatUser = {
@@ -135,7 +135,7 @@ const HomeLayout = () => {
       setLoading(false);
     };
 
-    if (user) setUpChatAndVideo();
+    if (user) setUpStream();
 
     return () => {
       if (!isSignedIn) {
