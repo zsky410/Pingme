@@ -3,7 +3,7 @@ import { Stack, useRouter } from 'expo-router';
 
 import Button from '@/components/Button';
 
-const NewMessageLayout = () => {
+const ModalLayout = () => {
   const router = useRouter();
   return (
     <Stack
@@ -56,4 +56,4 @@ const NewMessageLayout = () => {
   );
 };
 
-export default NewMessageLayout;
+export default ModalLayout;
