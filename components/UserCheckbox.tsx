@@ -4,13 +4,13 @@ import { UserResponse } from 'stream-chat';
 
 import UserCard from './UserCard';
 
-interface UserProps {
+interface UserCheckboxProps {
   user: UserResponse;
   checked: boolean;
   onValueChange: (value: boolean) => void;
 }
 
-const User = ({ user, checked, onValueChange }: UserProps) => {
+const UserCheckbox = ({ user, checked, onValueChange }: UserCheckboxProps) => {
   return (
     <UserCard onPress={() => onValueChange(!checked)} user={user}>
       <View className="flex items-center ml-auto">
@@ -25,4 +25,4 @@ const User = ({ user, checked, onValueChange }: UserProps) => {
   );
 };
 
-export default User;
+export default UserCheckbox;

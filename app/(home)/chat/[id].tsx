@@ -1,10 +1,6 @@
-import { useUser } from '@clerk/clerk-expo';
 import Feather from '@expo/vector-icons/Feather';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import {
-  useCalls,
-  useStreamVideoClient,
-} from '@stream-io/video-react-native-sdk';
+import { useCalls } from '@stream-io/video-react-native-sdk';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { View } from 'react-native';
@@ -44,15 +40,11 @@ const myMessageTheme: DeepPartial<Theme> = {
 const ChatScreen = () => {
   const { id: channelId } = useLocalSearchParams<{ id: string }>();
   const { client: chatClient } = useChatContext();
-  const videoClient = useStreamVideoClient();
-  const { user } = useUser();
   const router = useRouter();
 
   const [channel, setChannel] = useState<ChannelType>();
   const [loading, setLoading] = useState(true);
   const [activeCall] = useCalls();
-
-  const userId = user?.id!;
 
   useEffect(() => {
     const loadChannel = async () => {
@@ -64,7 +56,7 @@ const ChatScreen = () => {
     };
 
     if (chatClient && !channel) loadChannel();
-  }, [channelId, channel, chatClient, userId, videoClient]);
+  }, [channelId, channel, chatClient]);
 
   const startAudioCall = async () => {
     router.navigate({

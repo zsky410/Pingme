@@ -9,7 +9,7 @@ import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 import Spinner from '@/components/Spinner';
 import TextField from '@/components/TextField';
-import User from '@/components/User';
+import UserCheckbox from '@/components/UserCheckbox';
 import useContacts from '@/hooks/useContacts';
 
 const NewGroupScreen = () => {
@@ -102,15 +102,11 @@ const NewGroupScreen = () => {
   const sortedUsers = useMemo(
     () =>
       users.sort((a, b) => {
-        if (selectedUsers.includes(a.id)) {
-          return -1;
-        } else if (selectedUsers.includes(b.id)) {
-          return 1;
-        } else {
-          return 0;
-        }
+        const nameA = a.name;
+        const nameB = b.name;
+        return nameA?.localeCompare(nameB!)!;
       }),
-    [users, selectedUsers]
+    [users]
   );
 
   return (
@@ -138,7 +134,7 @@ const NewGroupScreen = () => {
       {!loadingContacts && users.length > 0 && (
         <View className="flex flex-col gap-2 mt-2">
           {sortedUsers.map((user) => (
-            <User
+            <UserCheckbox
               key={user.id}
               user={user}
               checked={selectedUsers.includes(user.id)}
@@ -147,7 +143,6 @@ const NewGroupScreen = () => {
           ))}
         </View>
       )}
-
       <Button
         className="mt-auto"
         onPress={createNewGroup}

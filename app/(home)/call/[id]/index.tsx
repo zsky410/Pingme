@@ -1,3 +1,4 @@
+import { useUser } from '@clerk/clerk-expo';
 import {
   CallContent,
   CallingState,
@@ -14,11 +15,10 @@ import {
   useCallStateHooks,
 } from '@stream-io/video-react-native-sdk';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
+import { useEffect } from 'react';
 import { View } from 'react-native';
 
 import ToggleVideo from '@/components/ToggleVideo';
-import { useUser } from '@clerk/clerk-expo';
-import { useEffect } from 'react';
 
 const svgContainerStyle = {
   backgroundColor: '#373737',
