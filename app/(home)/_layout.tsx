@@ -21,7 +21,7 @@ const tokenProvider = async (userId: string) => {
     headers: {
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ userId: userId }),
+    body: JSON.stringify({ userId }),
   });
   const data = await response.json();
   return data.token;
@@ -111,28 +111,32 @@ const HomeLayout = () => {
     };
 
     const setUpStream = async () => {
-      const chatClient = StreamChat.getInstance(API_KEY);
-      const clerkUser = user!;
-      const chatUser = {
-        id: clerkUser.id,
-        name: clerkUser.fullName!,
-        image: clerkUser.hasImage ? clerkUser.imageUrl : undefined,
-        username: clerkUser.username!,
-      };
+      try {
+        const chatClient = StreamChat.getInstance(API_KEY);
+        const clerkUser = user!;
+        const chatUser = {
+          id: clerkUser.id,
+          name: clerkUser.fullName!,
+          image: clerkUser.hasImage ? clerkUser.imageUrl : undefined,
+          username: clerkUser.username!,
+        };
 
-      if (!chatClient.user) {
-        await chatClient.connectUser(chatUser, customProvider);
+        if (!chatClient.user) {
+          await chatClient.connectUser(chatUser, customProvider);
+        }
+
+        setChatClient(chatClient);
+        const videoClient = StreamVideoClient.getOrCreateInstance({
+          apiKey: API_KEY,
+          user: chatUser,
+          tokenProvider: customProvider,
+        });
+        setVideoClient(videoClient);
+      } catch (error) {
+        console.error('Error setting up Stream:', error);
+      } finally {
+        setLoading(false);
       }
-
-      setChatClient(chatClient);
-      const videoClient = StreamVideoClient.getOrCreateInstance({
-        apiKey: API_KEY,
-        user: chatUser,
-        tokenProvider: customProvider,
-      });
-      setVideoClient(videoClient);
-
-      setLoading(false);
     };
 
     if (user) setUpStream();

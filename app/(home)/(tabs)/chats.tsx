@@ -25,12 +25,12 @@ const ChatsScreen = () => {
     <Screen className="bg-white" viewClassName="px-4">
       <View className="flex flex-row items-center justify-between w-full h-10">
         <AppMenu />
-        <View className="flex flex-row items-center gap-8">
+        <View className="flex flex-row items-center gap-4">
           <Button variant="plain">
             <Feather name="camera" size={20} />
           </Button>
           <Link href="/new-message" asChild>
-            <Button variant="plain">
+            <Button variant="plain" className="pl-4 py-1">
               <Feather name="edit" size={18} />
             </Button>
           </Link>

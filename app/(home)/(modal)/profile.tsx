@@ -57,22 +57,34 @@ const ProfileScreen = () => {
         username: finalUsername,
       });
 
-      const response = await fetch(profileImage.uri);
-      const blob = await response.blob();
-      const reader = new FileReader();
-      reader.readAsDataURL(blob);
-      reader.onloadend = async () => {
-        const base64data = reader.result as string;
-        const imageResult = await clerk.user?.setProfileImage({
-          file: base64data,
-        });
-        await client.upsertUser({
-          id: result?.id!,
-          name: result?.fullName!,
-          username: result?.username!,
-          image: imageResult ? imageResult.publicUrl! : undefined,
-        });
+      const updateUserImage = async (data: string | null) => {
+        try {
+          const imageResult = await clerk.user?.setProfileImage({
+            file: data,
+          });
+          await client.upsertUser({
+            id: result?.id!,
+            name: result?.fullName!,
+            username: result?.username!,
+            image: imageResult ? imageResult.publicUrl! : undefined,
+          });
+        } catch (error) {
+          console.error('Error updating user image:', error);
+        }
       };
+
+      if (profileImage.uri) {
+        const response = await fetch(profileImage.uri);
+        const blob = await response.blob();
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+          const base64data = reader.result as string;
+          await updateUserImage(base64data);
+        };
+      } else {
+        await updateUserImage(null);
+      }
 
       alert('Profile updated successfully!');
     } catch (error) {
@@ -85,7 +97,7 @@ const ProfileScreen = () => {
 
   return (
     <Screen
-      viewClassName="pt-3 android:pt-14 px-4 items-center gap-6"
+      viewClassName="pt-3 px-4 items-center gap-6"
       loadingOverlay={loading}
     >
       <View className="items-center gap-3">

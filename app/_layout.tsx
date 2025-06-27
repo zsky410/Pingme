@@ -6,15 +6,16 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import '../global.css';
 
+const PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY;
+
 const RootLayout = () => {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ClerkProvider tokenCache={tokenCache}>
+      <ClerkProvider tokenCache={tokenCache} publishableKey={PUBLISHABLE_KEY}>
         <Stack>
           <Stack.Screen name="index" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="(home)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />
       </ClerkProvider>

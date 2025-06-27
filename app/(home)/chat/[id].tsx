@@ -76,7 +76,7 @@ const ChatScreen = () => {
   const startVideoCall = async () => {
     router.navigate({
       pathname: `/call/[id]`,
-      params: { id: channelId, updateCall: 'true' },
+      params: { id: channelId, updateCall: 'true', video: 'true' },
     });
   };
 

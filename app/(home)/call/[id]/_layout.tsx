@@ -12,7 +12,7 @@ import ScreenLoading from '@/components/ScreenLoading';
 import { checkIfDMChannel } from '@/lib/utils';
 
 const CallLayout = () => {
-  const { id, updateCall } = useGlobalSearchParams();
+  const { id, updateCall, video } = useGlobalSearchParams();
   const router = useRouter();
   const [call, setCall] = useState<Call>();
   const videoClient = useStreamVideoClient();
@@ -31,25 +31,33 @@ const CallLayout = () => {
           role: isDMChannel ? 'admin' : undefined,
         })
       );
+      const callConfig = {
+        custom: {
+          triggeredBy: chatClient.user?.id,
+          members,
+        },
+        settings_override: {
+          video: {
+            enabled: true,
+            camera_default_on: video === 'true',
+            target_resolution: {
+              width: 2560,
+              height: 1440,
+            },
+          },
+        },
+      };
 
       await _call?.getOrCreate({
         ring: true,
         data: {
           members,
-          custom: {
-            triggeredBy: chatClient.user?.id,
-            members,
-          },
+          ...callConfig,
         },
       });
 
       if (updateCall === 'true') {
-        await _call?.update({
-          custom: {
-            triggeredBy: chatClient.user?.id,
-            members,
-          },
-        });
+        await _call?.update(callConfig);
       }
 
       if (!isDMChannel && updateCall === 'true') {
@@ -64,7 +72,8 @@ const CallLayout = () => {
     };
 
     startCall();
-  }, [chatClient, id, videoClient, updateCall, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (!call) {
     return <ScreenLoading />;

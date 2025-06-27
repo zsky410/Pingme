@@ -25,7 +25,7 @@ const NewMessageScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-1 android:pt-14 px-4">
+    <Screen viewClassName="pt-1 px-4">
       <View className="w-full">
         <Link href="/new-group" asChild>
           <Button

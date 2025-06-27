@@ -114,7 +114,7 @@ const NewGroupScreen = () => {
   );
 
   return (
-    <Screen viewClassName="pt-1 android:pt-14 px-4 gap-4">
+    <Screen viewClassName="pt-1 px-4 gap-4">
       <TextField
         id="groupName"
         label="Group Name"
