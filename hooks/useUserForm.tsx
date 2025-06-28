@@ -52,7 +52,7 @@ const useUserForm = (initialValues = defaultValues) => {
     setUsernameNumber(number);
 
     const isNumber = /^\d+$/.test(number);
-    const isValid = isNumber && number.length === 2 && number !== '00';
+    const isValid = isNumber && number.length === 2;
 
     if (!isValid) {
       setNumberError('Invalid username, enter a minimum of 2 digits');
