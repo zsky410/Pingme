@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { DimensionValue, Text, TextInput, View } from 'react-native';
 
 interface TextFieldProps extends React.ComponentProps<typeof TextInput> {
@@ -8,6 +9,7 @@ interface TextFieldProps extends React.ComponentProps<typeof TextInput> {
 const TextField = ({
   label,
   width = '100%',
+  className,
   ...otherProps
 }: TextFieldProps) => {
   return (
@@ -21,7 +23,10 @@ const TextField = ({
         </View>
       )}
       <TextInput
-        className="flex-1 placeholder:text-gray-400 text-black"
+        className={clsx(
+          'flex-1 placeholder:text-gray-400 text-black',
+          className
+        )}
         {...otherProps}
       />
     </View>
