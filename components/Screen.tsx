@@ -1,8 +1,6 @@
 import clsx from 'clsx';
-import { View } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import LoadingOverlay from './LoadingOverlay';
 
 interface ScreenProps {
   children: React.ReactNode;
@@ -22,7 +20,11 @@ const Screen = ({
       <SafeAreaView className={clsx('flex-1 android:pt-3', className)}>
         <View className={clsx('flex-1', viewClassName)}>{children}</View>
       </SafeAreaView>
-      {loadingOverlay && <LoadingOverlay />}
+      {loadingOverlay && (
+        <View className="absolute inset-0 bg-black/40 items-center justify-center z-50">
+          <ActivityIndicator color="white" />
+        </View>
+      )}
     </>
   );
 };
