@@ -1,14 +1,14 @@
 import { Image, ImageProps } from 'expo-image';
 import { cssInterop } from 'nativewind';
 
-const AppImage = (props: ImageProps) => {
-  const StyledImage = cssInterop(Image, {
-    className: {
-      target: 'style',
-    },
-  });
+cssInterop(Image, {
+  className: {
+    target: 'style',
+  },
+});
 
-  return <StyledImage {...props} />;
+const AppImage = (props: ImageProps) => {
+  return <Image {...props} />;
 };
 
 export default AppImage;

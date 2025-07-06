@@ -56,6 +56,11 @@ const ProfileScreen = () => {
         lastName,
         username: finalUsername,
       });
+      await client.upsertUser({
+        id: result?.id!,
+        name: result?.fullName!,
+        username: result?.username!,
+      });
 
       const updateUserImage = async (data: string | null) => {
         try {
@@ -64,8 +69,6 @@ const ProfileScreen = () => {
           });
           await client.upsertUser({
             id: result?.id!,
-            name: result?.fullName!,
-            username: result?.username!,
             image: imageResult ? imageResult.publicUrl! : undefined,
           });
         } catch (error) {
