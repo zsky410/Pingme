@@ -1,8 +1,21 @@
-import { MessageInput, useMessageInputContext } from 'stream-chat-expo';
+import { TextComposerState } from 'stream-chat';
+import {
+  MessageInput,
+  useAttachmentManagerState,
+  useMessageComposer,
+  useStateStore,
+} from 'stream-chat-expo';
+
+const textComposerStateSelector = (state: TextComposerState) => ({
+  text: state.text,
+});
 
 const CustomMessageInput = () => {
-  const { text, numberOfUploads } = useMessageInputContext();
-  const audioRecordingEnabled = !text && numberOfUploads === 0;
+  const { textComposer } = useMessageComposer();
+  const { text } = useStateStore(textComposer.state, textComposerStateSelector);
+  const { attachments } = useAttachmentManagerState();
+
+  const audioRecordingEnabled = !text && attachments.length === 0;
   return <MessageInput audioRecordingEnabled={audioRecordingEnabled} />;
 };
 

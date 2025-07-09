@@ -1,13 +1,26 @@
 import { Feather } from '@expo/vector-icons';
 import clsx from 'clsx';
-import { useMessageInputContext } from 'stream-chat-expo';
+import {
+  useAttachmentManagerState,
+  useMessageComposer,
+  useMessageInputContext,
+  useStateStore,
+} from 'stream-chat-expo';
 
+import { TextComposerState } from 'stream-chat';
 import Button from './Button';
 
-const SendButton = () => {
-  const { sendMessage, text, numberOfUploads } = useMessageInputContext();
+const textComposerStateSelector = (state: TextComposerState) => ({
+  text: state.text,
+});
 
-  if (!text && numberOfUploads === 0) return null;
+const SendButton = () => {
+  const { sendMessage } = useMessageInputContext();
+  const { textComposer } = useMessageComposer();
+  const { text } = useStateStore(textComposer.state, textComposerStateSelector);
+  const { attachments } = useAttachmentManagerState();
+
+  if (!text && attachments.length === 0) return null;
 
   return (
     <Button
