@@ -110,7 +110,6 @@ const ChatScreen = () => {
         channel={channel!}
         keyboardVerticalOffset={60}
         keyboardBehavior="padding"
-        autoCompleteTriggerSettings={() => ({})}
         hasCommands={false}
         AttachButton={AttachButton}
         SendButton={SendButton}
