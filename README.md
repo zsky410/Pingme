@@ -12,16 +12,14 @@ A privacy-first messaging app built with **React Native**, powered by **Stream C
 - 🎨 Clean, Signal-style mobile UI built with React Native  
 - 🔐 Privacy-conscious design
 
-## 🛠️ Tech Stack
+## 🚀 Preview
 
-- **React Native**
-- **Stream Chat SDK**
-- **Stream Video SDK**
-- **Expo**
-- **Clerk**
-- **TypeScript**
+| Platform   | File                      | Link              |
+| ---------- | ------------------------- | ----------------- |
+| 🤖 Android | `signal-clone-v1.0.0.apk` | [Download APK](https://github.com/TropicolX/signal-clone/releases/download/v1.0/signal-clone-v1.0.0.apk) |
+| 🍏 iOS     | `signal-clone-v1.0.0.ipa` | [Download IPA](https://github.com/TropicolX/signal-clone/releases/download/v1.0/signal-clone-v1.0.0.ipa) |
 
-## 🚀 Getting Started
+## 🎬 Getting Started
 
 ### 1. Clone the Repository
 
@@ -74,6 +72,15 @@ npx expo run:android
 
 * [Part 1: Project Setup, Auth & UI](link-to-blog-post-1)
 * [Part 2: Messaging & Calling](link-to-blog-post-2)
+
+## 🛠️ Tech Stack
+
+- **React Native**
+- **Stream Chat SDK**
+- **Stream Video SDK**
+- **Expo**
+- **Clerk**
+- **TypeScript**
 
 ## 💬 Acknowledgments
 
