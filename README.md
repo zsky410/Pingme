@@ -56,8 +56,6 @@ npx expo run:ios
 npx expo run:android
 ```
 
----
-
 ## 📸 Screenshots
 
 |         *Chat Screen*         |         *Call Screen*         |
