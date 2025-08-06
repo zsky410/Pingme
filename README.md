@@ -69,11 +69,6 @@ npx expo run:android
 | :---------------------------: | :---------------------------: |
 | <img width="1440" height="1200" alt="image" src="https://github.com/user-attachments/assets/405ed51d-15be-4895-b272-f33ba8266e47" /> | <img width="1440" height="1200" alt="image" src="https://github.com/user-attachments/assets/328bead4-dcbe-42fd-a97c-f5749c96f5f2" /> |
 
-## 📚 Articles
-
-* [Part 1: Project Setup, Auth & UI](https://dev.to/tropicolx/build-a-signal-clone-with-react-native-and-stream-part-one-5a47)
-* [Part 2: Messaging & Calling](https://dev.to/tropicolx/build-a-signal-clone-with-react-native-and-stream-part-two-1k3e)
-
 ## 📹 Video Demo
 
 [Watch the Full Walkthrough (Coming Soon) →](link-to-your-video)
