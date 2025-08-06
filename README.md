@@ -3,6 +3,13 @@
 
 A privacy-first messaging app built with **React Native**, powered by **Stream Chat** and **Stream Video SDK**. Inspired by the core features of Signal, this project supports 1-on-1 messaging, media sharing, and real-time audio/video calling.
 
+<p align="center">
+    <a href="https://dev.to/tropicolx/build-a-signal-clone-with-react-native-and-stream-part-one-5a47" style="display: block;" align="center">
+    <img width="1288" height="728" alt="Signal clone YT thumbnail" src="https://github.com/user-attachments/assets/2623e159-a81e-425c-864b-5070854de18c" />
+    </a>
+</p>
+<p align="center"><a href="https://dev.to/tropicolx/build-a-signal-clone-with-react-native-and-stream-part-one-5a47" align="center">Click to read!</a></p>
+
 ## 🔧 Features
 
 - ✅ Secure 1-on-1 real-time messaging  
