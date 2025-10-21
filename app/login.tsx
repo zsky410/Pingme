@@ -1,42 +1,41 @@
+import { useAuth } from "@/contexts/AuthContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import {
-  StyleSheet,
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Image,
-  Alert,
-  ActivityIndicator,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useState } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginScreen() {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [errors, setErrors] = useState({ username: "", password: "" });
+  const [errors, setErrors] = useState({ email: "", password: "" });
 
   const router = useRouter();
   const { login } = useAuth();
 
   const validateForm = (): boolean => {
     let isValid = true;
-    const newErrors = { username: "", password: "" };
+    const newErrors = { email: "", password: "" };
 
-    // Validate username
-    if (!username.trim()) {
-      newErrors.username = "Username is required";
+    // Validate email
+    if (!email.trim()) {
+      newErrors.email = "Email is required";
       isValid = false;
-    } else if (username.trim().length < 3) {
-      newErrors.username = "Username must be at least 3 characters";
+    } else if (!/\S+@\S+\.\S+/.test(email.trim())) {
+      newErrors.email = "Please enter a valid email address";
       isValid = false;
     }
 
@@ -44,8 +43,8 @@ export default function LoginScreen() {
     if (!password) {
       newErrors.password = "Password is required";
       isValid = false;
-    } else if (password.length < 3) {
-      newErrors.password = "Password must be at least 3 characters";
+    } else if (password.length < 6) {
+      newErrors.password = "Password must be at least 6 characters";
       isValid = false;
     }
 
@@ -55,7 +54,7 @@ export default function LoginScreen() {
 
   const handleLogin = async () => {
     // Clear previous errors
-    setErrors({ username: "", password: "" });
+    setErrors({ email: "", password: "" });
 
     // Validate form
     if (!validateForm()) {
@@ -64,28 +63,22 @@ export default function LoginScreen() {
 
     setIsLoading(true);
 
-    try {
-      const success = await login(username.trim(), password);
+    // Use a more robust error handling approach
+    const result = await login(email.trim(), password);
 
-      if (success) {
-        // Navigate to main app
-        router.replace("/(tabs)/chats");
-      } else {
-        Alert.alert(
-          "Login Failed",
-          "Invalid username or password. Please try again.",
-          [{ text: "OK" }]
-        );
-      }
-    } catch (error) {
+    if (result.success) {
+      // Navigate to main app
+      router.replace("/(tabs)/chats");
+    } else {
+      // Show error popup
       Alert.alert(
-        "Error",
-        "An error occurred during login. Please try again.",
+        "Đăng nhập thất bại",
+        result.error || "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
         [{ text: "OK" }]
       );
-    } finally {
-      setIsLoading(false);
     }
+
+    setIsLoading(false);
   };
 
   const handleForgotPassword = () => {
@@ -130,39 +123,40 @@ export default function LoginScreen() {
 
           {/* Form Section */}
           <View style={styles.formContainer}>
-            {/* Username Input */}
+            {/* Email Input */}
             <View style={styles.inputGroup}>
-              <Text style={styles.label}>Username</Text>
+              <Text style={styles.label}>Email</Text>
               <View
                 style={[
                   styles.inputWrapper,
-                  errors.username && styles.inputWrapperError,
+                  errors.email && styles.inputWrapperError,
                 ]}
               >
                 <MaterialCommunityIcons
-                  name="account-outline"
+                  name="email-outline"
                   size={20}
-                  color={errors.username ? "#F44336" : "#9E9E9E"}
+                  color={errors.email ? "#F44336" : "#9E9E9E"}
                   style={styles.inputIcon}
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter your username"
+                  placeholder="Enter your email"
                   placeholderTextColor="#BDBDBD"
-                  value={username}
+                  value={email}
                   onChangeText={(text) => {
-                    setUsername(text);
-                    if (errors.username) {
-                      setErrors({ ...errors, username: "" });
+                    setEmail(text);
+                    if (errors.email) {
+                      setErrors({ ...errors, email: "" });
                     }
                   }}
                   autoCapitalize="none"
                   autoCorrect={false}
+                  keyboardType="email-address"
                   editable={!isLoading}
                 />
               </View>
-              {errors.username ? (
-                <Text style={styles.errorText}>{errors.username}</Text>
+              {errors.email ? (
+                <Text style={styles.errorText}>{errors.email}</Text>
               ) : null}
             </View>
 
@@ -246,7 +240,9 @@ export default function LoginScreen() {
                 size={16}
                 color="#6D5FFD"
               />
-              <Text style={styles.demoInfoText}>Demo: admin / 123</Text>
+              <Text style={styles.demoInfoText}>
+                Demo: test1@gmail.com / test123
+              </Text>
             </View>
           </View>
 

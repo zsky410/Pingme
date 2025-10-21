@@ -1,133 +1,333 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import { useState } from "react";
-import { useRouter } from "expo-router";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { Image as ExpoImage } from "expo-image";
-import ProfileMenu from "@/components/ProfileMenu";
 import { useAuth } from "@/contexts/AuthContext";
-
-// Sample data - giống như ảnh mẫu
-const CHAT_DATA = [
-  {
-    id: "1",
-    name: "George Alan",
-    message: "Lorem ipsum dolor sit amet consectetur.",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=1",
-    online: true,
-    unread: 0,
-  },
-  {
-    id: "2",
-    name: "Uber Cars",
-    message: "Sender: Lorem ipsum dolor sit amet cons...",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=2",
-    online: false,
-    unread: 0,
-  },
-  {
-    id: "3",
-    name: "Safiya Fareena",
-    message: "📹 Video",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=3",
-    online: true,
-    unread: 1,
-  },
-  {
-    id: "4",
-    name: "Robert Allen",
-    message: "✓ 📷 Photo Lorem ipsum dolor sit amet...",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=4",
-    online: true,
-    unread: 0,
-  },
-  {
-    id: "5",
-    name: "Epic Game",
-    message: "John Paul: @Robert Lorem ipsum d...",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=5",
-    online: false,
-    unread: 24,
-  },
-  {
-    id: "6",
-    name: "Scott Franklin",
-    message: "🎤 Audio",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=6",
-    online: false,
-    unread: 0,
-  },
-  {
-    id: "7",
-    name: "Muhammed",
-    message: "✓ 😊 Emoji",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=7",
-    online: true,
-    unread: 0,
-  },
-  {
-    id: "8",
-    name: "Innovative Online Shopping",
-    message: "↪ Thread Lorem ipsum door sit amet co...",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=8",
-    online: true,
-    unread: 0,
-  },
-  {
-    id: "9",
-    name: "Micheal Scott",
-    message: "📞 Voice call",
-    time: "4:30 PM",
-    avatar: "https://i.pravatar.cc/150?img=9",
-    online: false,
-    unread: 0,
-  },
-];
-
+import { chatService, userService } from "@/services/firebaseService";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Image as ExpoImage } from "expo-image";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Animated,
+  FlatList,
+  Image,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import {
+  GestureHandlerRootView,
+  PanGestureHandler,
+  State,
+} from "react-native-gesture-handler";
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function ChatsScreen() {
   const router = useRouter();
   const { user } = useAuth();
-  const [chats, setChats] = useState(CHAT_DATA);
-  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [chats, setChats] = useState<any[]>([]);
+  const [search, setSearch] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [swipeAnimations] = useState<{ [key: string]: Animated.Value }>({});
 
-  const renderChatItem = ({ item }: { item: (typeof CHAT_DATA)[0] }) => (
+  useEffect(() => {
+    let cancelled = false;
+    let unsubscribe: (() => void) | null = null;
+
+    const setupRealTimeChats = async () => {
+      if (!user?.uid) return;
+
+      try {
+        // Set up real-time listener for chat updates
+        unsubscribe = chatService.listenToChatUpdates(
+          user.uid,
+          async (data) => {
+            if (cancelled) return;
+
+            console.log("Real-time chat updates received:", data.length);
+
+            // Load other user info for each chat
+            const chatsWithUserInfo = await Promise.all(
+              data.map(async (chat) => {
+                if (chat.participants && chat.participants.length === 2) {
+                  const otherUserId = chat.participants.find(
+                    (uid: string) => uid !== user.uid
+                  );
+                  if (otherUserId) {
+                    try {
+                      const otherUserData = await userService.getUserById(
+                        otherUserId
+                      );
+                      return { ...chat, otherUser: otherUserData };
+                    } catch (e) {
+                      console.log("Failed to load other user:", e);
+                      return chat;
+                    }
+                  }
+                }
+                return chat;
+              })
+            );
+
+            if (!cancelled) setChats(chatsWithUserInfo);
+          }
+        );
+      } catch (e) {
+        console.log("Setup real-time chats error:", e);
+        if (!cancelled) setChats([]);
+      }
+    };
+
+    setupRealTimeChats();
+
+    return () => {
+      cancelled = true;
+      if (unsubscribe) {
+        console.log("Cleaning up chat updates listener");
+        unsubscribe();
+      }
+    };
+  }, [user?.uid]);
+
+  useEffect(() => {
+    let active = true;
+    const run = async () => {
+      if (search.trim().length === 0) {
+        if (active) setSearchResults([]);
+        return;
+      }
+      try {
+        // email search from Firestore
+        const results = await userService.searchUsersByEmail(search, {
+          limit: 20,
+        } as any);
+        // Filter out current user from search results
+        const filteredResults = results.filter(
+          (result: any) => result.id !== user?.uid
+        );
+        if (active) setSearchResults(filteredResults);
+      } catch (e) {
+        console.log("search error", e);
+        if (active) setSearchResults([]);
+      }
+    };
+
+    // debounce simple
+    const t = setTimeout(run, 300);
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [search]);
+
+  // Handle swipe gestures
+  const handleSwipe = (chatId: string, dx: number) => {
+    if (!swipeAnimations[chatId]) {
+      swipeAnimations[chatId] = new Animated.Value(0);
+    }
+
+    const maxSwipe = -80; // Maximum swipe distance
+    const newX = Math.max(maxSwipe, dx);
+
+    Animated.spring(swipeAnimations[chatId], {
+      toValue: newX,
+      useNativeDriver: true,
+      tension: 100,
+      friction: 8,
+    }).start();
+  };
+
+  const resetSwipe = (chatId: string) => {
+    if (swipeAnimations[chatId]) {
+      Animated.spring(swipeAnimations[chatId], {
+        toValue: 0,
+        useNativeDriver: true,
+        tension: 100,
+        friction: 8,
+      }).start();
+    }
+  };
+
+  // Handle delete chat
+  const handleDeleteChat = (chatId: string, chatName: string) => {
+    Alert.alert(
+      "Delete Chat",
+      `Are you sure you want to delete "${chatName}"? This will only remove the chat from your list.`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            try {
+              if (user?.uid) {
+                await chatService.clearChatForUser(chatId, user.uid);
+                // Remove from local state
+                setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+              }
+            } catch (error) {
+              console.log("Delete chat error:", error);
+              Alert.alert("Error", "Failed to delete chat");
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const renderChatItem = ({ item }: { item: any }) => {
+    // For 1:1 chats, show other user's name instead of chatName
+    let displayName = "Chat";
+
+    if (item.chatName && item.chatName !== "Group Chat") {
+      displayName = item.chatName;
+    } else {
+      // For 1:1 chats, try to get other user's name
+      if (item.participants && item.participants.length === 2 && user?.uid) {
+        const otherUserId = item.participants.find(
+          (uid: string) => uid !== user.uid
+        );
+        if (otherUserId) {
+          // Use otherUser name if available, otherwise show email or fallback
+          displayName =
+            item.otherUser?.fullName ||
+            item.otherUser?.name ||
+            item.otherUser?.email ||
+            `User ${otherUserId.slice(0, 8)}`;
+        }
+      } else if (item.participants && item.participants.length > 2) {
+        displayName = item.chatName || "Group Chat";
+      }
+    }
+
+    const translateX = swipeAnimations[item.id] || new Animated.Value(0);
+
+    const onGestureEvent = Animated.event(
+      [{ nativeEvent: { translationX: translateX } }],
+      { useNativeDriver: true }
+    );
+
+    const onHandlerStateChange = (event: any) => {
+      if (event.nativeEvent.state === State.END) {
+        const { translationX } = event.nativeEvent;
+        if (translationX < -40) {
+          // Swipe left enough to show delete button
+          handleSwipe(item.id, -80);
+        } else {
+          // Reset position
+          resetSwipe(item.id);
+        }
+      }
+    };
+
+    return (
+      <View style={styles.swipeContainer}>
+        {/* Delete button background */}
+        <View style={styles.deleteButtonContainer}>
+          <TouchableOpacity
+            style={styles.deleteButton}
+            onPress={() => handleDeleteChat(item.id, displayName)}
+          >
+            <MaterialCommunityIcons name="delete" size={24} color="#FFFFFF" />
+          </TouchableOpacity>
+        </View>
+
+        {/* Chat item */}
+        <PanGestureHandler
+          onGestureEvent={onGestureEvent}
+          onHandlerStateChange={onHandlerStateChange}
+        >
+          <Animated.View
+            style={[styles.chatItem, { transform: [{ translateX }] }]}
+          >
+            <TouchableOpacity
+              style={styles.chatItemContent}
+              onPress={() => router.push(`/chat/${item.id}`)}
+            >
+              <View style={styles.avatarContainer}>
+                {item.otherUser?.avatar ? (
+                  <Image
+                    source={{
+                      uri: `data:${
+                        item.otherUser.avatarType || "image/jpeg"
+                      };base64,${item.otherUser.avatar}`,
+                    }}
+                    style={styles.avatar}
+                  />
+                ) : (
+                  <View style={[styles.avatar, styles.defaultAvatar]}>
+                    <Text style={styles.avatarText}>
+                      {(item.otherUser?.fullName || item.otherUser?.name || "U")
+                        .charAt(0)
+                        .toUpperCase()}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <View style={styles.chatContent}>
+                <View style={styles.chatHeader}>
+                  <Text style={styles.chatName}>{displayName}</Text>
+                  {item.lastMessageTime && (
+                    <Text style={styles.chatTime}>{""}</Text>
+                  )}
+                </View>
+                <View style={styles.chatFooter}>
+                  {item.lastMessage && (
+                    <Text style={styles.chatMessage} numberOfLines={1}>
+                      {item.lastMessageSenderId === user?.uid
+                        ? `Bạn: ${item.lastMessage}`
+                        : item.lastMessage}
+                    </Text>
+                  )}
+                </View>
+              </View>
+            </TouchableOpacity>
+          </Animated.View>
+        </PanGestureHandler>
+      </View>
+    );
+  };
+
+  const renderSearchItem = ({ item }: { item: any }) => (
     <TouchableOpacity
       style={styles.chatItem}
-      onPress={() => router.push(`/chat/${item.id}`)}
+      onPress={() => {
+        setSearch("");
+        setSearchResults([]);
+        router.push(`/user-profile/${item.id}`);
+      }}
     >
       <View style={styles.avatarContainer}>
-        <Image source={{ uri: item.avatar }} style={styles.avatar} />
-        {item.online && <View style={styles.onlineIndicator} />}
+        {item.avatar ? (
+          <Image
+            source={{
+              uri: `data:${item.avatarType || "image/jpeg"};base64,${
+                item.avatar
+              }`,
+            }}
+            style={styles.avatar}
+          />
+        ) : (
+          <View
+            style={[
+              styles.avatar,
+              { alignItems: "center", justifyContent: "center" },
+            ]}
+          >
+            <Text style={{ color: "#9E9E9E", fontWeight: "600" }}>
+              {(item.fullName || item.email || "").slice(0, 1).toUpperCase()}
+            </Text>
+          </View>
+        )}
       </View>
       <View style={styles.chatContent}>
         <View style={styles.chatHeader}>
-          <Text style={styles.chatName}>{item.name}</Text>
-          <Text style={styles.chatTime}>{item.time}</Text>
+          <Text style={styles.chatName}>{item.fullName || item.email}</Text>
+          <Text style={styles.chatTime}></Text>
         </View>
         <View style={styles.chatFooter}>
           <Text style={styles.chatMessage} numberOfLines={1}>
-            {item.message}
+            {item.email}
           </Text>
-          {item.unread > 0 && (
-            <View style={styles.unreadBadge}>
-              <Text style={styles.unreadText}>{item.unread}</Text>
-            </View>
-          )}
         </View>
       </View>
     </TouchableOpacity>
@@ -163,61 +363,82 @@ export default function ChatsScreen() {
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <ExpoImage
-          source={require("@/assets/logo/logo_full.png")}
-          style={styles.logo}
-          contentFit="contain"
-        />
-        <View style={styles.headerRight}>
-          <TouchableOpacity
-            style={styles.profileButton}
-            onPress={() => setShowProfileMenu(true)}
-          >
-            <Text style={styles.profileText}>
-              {user?.fullName
-                ?.split(" ")
-                .map((n) => n[0])
-                .join("")
-                .toUpperCase() || "U"}
-            </Text>
-          </TouchableOpacity>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        {/* Header with integrated search */}
+        <View style={styles.header}>
+          <ExpoImage
+            source={require("@/assets/logo/logo_full.png")}
+            style={styles.logo}
+            contentFit="contain"
+          />
+          <View style={styles.searchContainer}>
+            <View style={styles.searchBar}>
+              <MaterialCommunityIcons
+                name="magnify"
+                size={20}
+                color="#9E9E9E"
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="Tìm kiếm..."
+                placeholderTextColor="#9E9E9E"
+                value={search}
+                onChangeText={setSearch}
+                autoCapitalize="none"
+                keyboardType="email-address"
+                returnKeyType="search"
+              />
+              {search.length > 0 && (
+                <TouchableOpacity
+                  onPress={() => setSearch("")}
+                  style={styles.clearButton}
+                >
+                  <MaterialCommunityIcons
+                    name="close-circle"
+                    size={20}
+                    color="#9E9E9E"
+                  />
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
         </View>
-      </View>
 
-      {/* Chat List */}
-      {chats.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          data={chats}
-          keyExtractor={(item) => item.id}
-          renderItem={renderChatItem}
-          contentContainerStyle={styles.listContent}
-        />
-      )}
+        {/* Search results or user chats */}
+        {search.length > 0 ? (
+          <FlatList
+            data={searchResults}
+            keyExtractor={(item) => item.id}
+            renderItem={renderSearchItem}
+            contentContainerStyle={styles.listContent}
+            ListEmptyComponent={renderEmptyState}
+          />
+        ) : chats.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          <FlatList
+            data={chats}
+            keyExtractor={(item) => item.id}
+            renderItem={renderChatItem}
+            contentContainerStyle={styles.listContent}
+          />
+        )}
 
-      {/* Floating Action Button */}
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.push("/new-group")}
-        activeOpacity={0.8}
-      >
-        <MaterialCommunityIcons
-          name="account-group"
-          size={28}
-          color="#FFFFFF"
-        />
-      </TouchableOpacity>
-
-      {/* Profile Menu */}
-      <ProfileMenu
-        visible={showProfileMenu}
-        onClose={() => setShowProfileMenu(false)}
-      />
-    </SafeAreaView>
+        {/* Floating Action Button */}
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.push("/new-group")}
+          activeOpacity={0.8}
+        >
+          <MaterialCommunityIcons
+            name="account-group"
+            size={28}
+            color="#FFFFFF"
+          />
+        </TouchableOpacity>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -228,22 +449,45 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 12,
     backgroundColor: "#FFFFFF",
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
+    gap: 12,
   },
   logo: {
-    width: 120,
-    height: 40,
+    width: 100,
+    height: 32,
+  },
+  searchContainer: {
+    flex: 1,
   },
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
+  },
+  searchBar: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F8F9FA",
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: "#E9ECEF",
+    gap: 8,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 14,
+    color: "#000000",
+    paddingVertical: 0,
+  },
+  clearButton: {
+    padding: 2,
   },
   profileButton: {
     width: 40,
@@ -253,6 +497,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  profileAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   profileText: {
     color: "#FFFFFF",
     fontSize: 16,
@@ -261,11 +510,39 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 16,
   },
+  swipeContainer: {
+    position: "relative",
+    backgroundColor: "#FFFFFF",
+  },
+  deleteButtonContainer: {
+    position: "absolute",
+    right: 0,
+    top: 0,
+    bottom: 0,
+    width: 80,
+    backgroundColor: "#F44336",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1,
+  },
+  deleteButton: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   chatItem: {
     flexDirection: "row",
     paddingHorizontal: 16,
     paddingVertical: 12,
     alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    zIndex: 2,
+  },
+  chatItemContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   avatarContainer: {
     position: "relative",
@@ -276,6 +553,16 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 28,
     backgroundColor: "#F0F0F0",
+  },
+  defaultAvatar: {
+    backgroundColor: "#6D5FFD",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  avatarText: {
+    color: "#FFFFFF",
+    fontSize: 20,
+    fontWeight: "600",
   },
   onlineIndicator: {
     position: "absolute",

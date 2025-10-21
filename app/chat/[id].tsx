@@ -1,43 +1,45 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  FlatList,
-  TextInput,
-  TouchableOpacity,
-  KeyboardAvoidingView,
-  Platform,
-  Image,
-  Alert,
-} from "react-native";
-import { useState, useEffect, useCallback, useRef } from "react";
-import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
-import { SafeAreaView } from "react-native-safe-area-context";
-import * as Clipboard from "expo-clipboard";
+import AttachmentMenu from "@/components/chat/AttachmentMenu";
+import EditMessageModal from "@/components/chat/EditMessageModal";
+import EmojiPickerSheet from "@/components/chat/EmojiPickerSheet";
 import FileAttachment from "@/components/chat/FileAttachment";
 import ImageMessage from "@/components/chat/ImageMessage";
-import VideoMessage from "@/components/chat/VideoMessage";
 import ImageViewer from "@/components/chat/ImageViewer";
-import VideoPlayer from "@/components/chat/VideoPlayer";
-import MessageOptionsSheet, {
-  MessageOption,
-} from "@/components/chat/MessageOptionsSheet";
-import EditMessageModal from "@/components/chat/EditMessageModal";
-import MessageReactions from "@/components/chat/MessageReactions";
-import ReactionDetailsSheet, {
-  ReactionUser,
-} from "@/components/chat/ReactionDetailsSheet";
-import EmojiPickerSheet from "@/components/chat/EmojiPickerSheet";
 import MentionSuggestions, {
   MentionUser,
 } from "@/components/chat/MentionSuggestions";
 import MentionText from "@/components/chat/MentionText";
-import AttachmentMenu from "@/components/chat/AttachmentMenu";
-import VoiceRecorder from "@/components/chat/VoiceRecorder";
-import VoiceMessage from "@/components/chat/VoiceMessage";
+import MessageOptionsSheet, {
+  MessageOption,
+} from "@/components/chat/MessageOptionsSheet";
+import MessageReactions from "@/components/chat/MessageReactions";
 import PollMessage from "@/components/chat/PollMessage";
-import { usePolls, Poll } from "@/contexts/PollContext";
+import ReactionDetailsSheet, {
+  ReactionUser,
+} from "@/components/chat/ReactionDetailsSheet";
+import VideoMessage from "@/components/chat/VideoMessage";
+import VideoPlayer from "@/components/chat/VideoPlayer";
+import VoiceMessage from "@/components/chat/VoiceMessage";
+import VoiceRecorder from "@/components/chat/VoiceRecorder";
+import { useAuth } from "@/contexts/AuthContext";
+import { Poll, usePolls } from "@/contexts/PollContext";
+import { chatService, userService } from "@/services/firebaseService";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Alert,
+  FlatList,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type MessageType = "text" | "file" | "image" | "video" | "voice" | "poll";
 
@@ -368,14 +370,119 @@ export default function ChatScreen() {
   const { id } = useLocalSearchParams();
   const router = useRouter();
   const { getPendingPoll, clearPendingPoll } = usePolls();
+  const { user } = useAuth();
 
   // Determine if this is a group chat (id starts with "group-" or is "2" for Uber Cars group)
   const isGroupChat =
     typeof id === "string" && (id.startsWith("group-") || id === "2");
 
   const [messages, setMessages] = useState<Message[]>(
-    isGroupChat ? SAMPLE_GROUP_MESSAGES : SAMPLE_MESSAGES
+    isGroupChat ? SAMPLE_GROUP_MESSAGES : []
   );
+  const [chatInfo, setChatInfo] = useState<any>(null);
+  const [otherUser, setOtherUser] = useState<any>(null);
+
+  // Load chat info and messages for 1:1 chat
+  useEffect(() => {
+    let unsubscribe: (() => void) | null = null;
+
+    const loadChatData = async () => {
+      if (!id || typeof id !== "string" || isGroupChat || !user?.uid) return;
+
+      try {
+        console.log("Loading chat data for chat ID:", id, "user:", user.uid);
+
+        // Load chat info
+        const chatData = await chatService.getUserChats(user.uid);
+        const currentChat = chatData.find((chat: any) => chat.id === id);
+        console.log("Found chat:", currentChat);
+        setChatInfo(currentChat);
+
+        // Set up real-time listener for messages
+        unsubscribe = chatService.listenToMessages(
+          id,
+          user.uid,
+          (messageDocs) => {
+            console.log("Real-time messages received:", messageDocs.length);
+
+            const mappedMessages: Message[] = messageDocs.map((m: any) => {
+              return {
+                id: m.id,
+                type: (m.type as MessageType) || "text",
+                text: m.content,
+                time: new Date(
+                  m.timestamp?.toDate ? m.timestamp.toDate() : Date.now()
+                ).toLocaleTimeString("en-US", {
+                  hour: "numeric",
+                  minute: "2-digit",
+                  hour12: true,
+                }),
+                isMine: user.uid === m.senderId,
+              };
+            });
+
+            setMessages(mappedMessages);
+          }
+        );
+
+        // Load other user info
+        if (currentChat?.participants) {
+          console.log("Chat participants:", currentChat.participants);
+          console.log("Current user ID:", user.uid);
+
+          const otherUserId = currentChat.participants.find(
+            (uid: string) => uid !== user.uid
+          );
+          console.log("Found other user ID:", otherUserId);
+
+          if (otherUserId) {
+            try {
+              const otherUserData = await userService.getUserById(otherUserId);
+              console.log("Loaded other user for ID:", otherUserId);
+              console.log("User data:", otherUserData);
+              if (otherUserData) {
+                setOtherUser(otherUserData);
+              } else {
+                console.log("No user data found, using fallback");
+                setOtherUser({
+                  id: otherUserId,
+                  fullName: "User " + otherUserId.slice(0, 8),
+                  email: "user@example.com",
+                });
+              }
+            } catch (e) {
+              console.log("Failed to load other user:", e);
+              // Set fallback user data
+              setOtherUser({
+                id: otherUserId,
+                fullName: "User " + otherUserId.slice(0, 8),
+                email: "user@example.com",
+              });
+            }
+          } else {
+            console.log("No other user found in participants");
+            setOtherUser({
+              id: "unknown",
+              fullName: "Unknown User",
+              email: "unknown@example.com",
+            });
+          }
+        }
+      } catch (e) {
+        console.log("load chat data error", e);
+      }
+    };
+
+    loadChatData();
+
+    // Cleanup listener on unmount
+    return () => {
+      if (unsubscribe) {
+        console.log("Cleaning up message listener");
+        unsubscribe();
+      }
+    };
+  }, [id, isGroupChat, user?.uid]);
 
   // Check for pending poll when screen becomes focused
   useFocusEffect(
@@ -484,12 +591,16 @@ export default function ChatScreen() {
     },
   ];
 
-  const sendMessage = () => {
-    if (inputText.trim()) {
+  const sendMessage = async () => {
+    const content = inputText.trim();
+    if (!content) return;
+
+    // Group chats keep sample behavior
+    if (isGroupChat) {
       const newMessage: Message = {
         id: Date.now().toString(),
         type: "text",
-        text: inputText,
+        text: content,
         time: new Date().toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
@@ -500,6 +611,32 @@ export default function ChatScreen() {
       };
       setMessages([...messages, newMessage]);
       setInputText("");
+      return;
+    }
+
+    if (!id || typeof id !== "string" || !user?.uid) return;
+
+    const optimistic: Message = {
+      id: `local-${Date.now()}`,
+      type: "text",
+      text: content,
+      time: new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      }),
+      isMine: true,
+      status: "sent",
+    };
+    setMessages((prev) => [...prev, optimistic]);
+    setInputText("");
+
+    try {
+      await chatService.sendMessage(id, user.uid, content, "text");
+    } catch (e) {
+      console.log("send message error", e);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimistic.id));
     }
   };
 
@@ -1244,12 +1381,29 @@ export default function ChatScreen() {
         </TouchableOpacity>
         <View style={styles.headerCenter}>
           <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=1" }}
+            source={{
+              uri: isGroupChat
+                ? "https://i.pravatar.cc/150?img=1"
+                : otherUser?.avatar
+                ? `data:${otherUser.avatarType || "image/jpeg"};base64,${
+                    otherUser.avatar
+                  }`
+                : "https://i.pravatar.cc/150?img=1",
+            }}
             style={styles.headerAvatar}
           />
           <View style={styles.headerInfo}>
-            <Text style={styles.headerName}>George Alan</Text>
-            <Text style={styles.headerStatus}>Online</Text>
+            <Text style={styles.headerName}>
+              {isGroupChat
+                ? "Group Chat"
+                : otherUser?.fullName ||
+                  otherUser?.name ||
+                  otherUser?.email ||
+                  "Loading..."}
+            </Text>
+            <Text style={styles.headerStatus}>
+              {isGroupChat ? "Online" : otherUser?.status || "Offline"}
+            </Text>
           </View>
         </View>
         <View style={styles.headerActions}>

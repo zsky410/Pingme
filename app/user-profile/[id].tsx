@@ -1,15 +1,18 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { useAuth } from "@/contexts/AuthContext";
+import { chatService, userService } from "@/services/firebaseService";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Colors } from "@/constants/theme";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Mock user data
 const MOCK_USERS: Record<
@@ -116,8 +119,114 @@ const MOCK_USERS: Record<
 export default function UserProfile() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
+  const { user: currentUser } = useAuth();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
 
-  const user = MOCK_USERS[id as string];
+  useEffect(() => {
+    const loadUser = async () => {
+      if (!id) return;
+      try {
+        const userData = await userService.getUserById(id);
+        if (userData) {
+          setUser({ id, ...userData });
+        } else {
+          // Fallback to mock data if not found in Firebase
+          setUser(MOCK_USERS[id as string]);
+        }
+      } catch (e) {
+        console.log("load user error", e);
+        // Fallback to mock data
+        setUser(MOCK_USERS[id as string]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadUser();
+  }, [id]);
+
+  const handleMessage = async () => {
+    if (!currentUser?.uid || !user?.id) return;
+
+    try {
+      // Check if chat already exists
+      const existingChats = await chatService.getUserChats(currentUser.uid);
+      const existingChat = existingChats.find(
+        (chat: any) =>
+          Array.isArray(chat.participants) &&
+          chat.participants.includes(user.id)
+      );
+
+      let chatId = existingChat?.id;
+
+      if (!chatId) {
+        // Create new chat
+        const docRef = await chatService.createChat([currentUser.uid, user.id]);
+        chatId = docRef.id;
+      }
+
+      router.push(`/chat/${chatId}`);
+    } catch (e) {
+      console.log("create chat error", e);
+      Alert.alert("Error", "Failed to start conversation");
+    }
+  };
+
+  const handleCall = () => {
+    Alert.alert("Call", "Call feature coming soon!");
+  };
+
+  const handleVideoCall = () => {
+    Alert.alert("Video Call", "Video call feature coming soon!");
+  };
+
+  const handleBlock = () => {
+    Alert.alert("Block User", "Are you sure you want to block this user?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Block",
+        style: "destructive",
+        onPress: () => {
+          Alert.alert("Blocked", "User has been blocked");
+        },
+      },
+    ]);
+  };
+
+  const handleReport = () => {
+    Alert.alert("Report User", "Are you sure you want to report this user?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Report",
+        style: "destructive",
+        onPress: () => {
+          Alert.alert("Reported", "User has been reported");
+        },
+      },
+    ]);
+  };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <MaterialCommunityIcons
+              name="arrow-left"
+              size={24}
+              color="#000000"
+            />
+          </TouchableOpacity>
+        </View>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>Loading...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!user) {
     return (
@@ -148,6 +257,17 @@ export default function UserProfile() {
       ? "#FF9800"
       : "#9E9E9E";
 
+  // Handle Firebase user data format
+  const displayName = user.fullName || user.name || "Unknown User";
+  const displayUsername =
+    user.username || user.email?.split("@")[0] || "unknown";
+  const displayBio = user.bio || "No bio available";
+  const displayEmail = user.email || "No email";
+  const displayStatus = user.status || "Offline";
+  const displayAvatar = user.avatar
+    ? `data:${user.avatarType || "image/jpeg"};base64,${user.avatar}`
+    : user.avatar || "https://i.pravatar.cc/150?img=1";
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -176,20 +296,23 @@ export default function UserProfile() {
         {/* Profile Header */}
         <View style={styles.profileHeader}>
           <View style={styles.avatarContainer}>
-            <Image source={{ uri: user.avatar }} style={styles.avatar} />
+            <Image source={{ uri: displayAvatar }} style={styles.avatar} />
             <View
               style={[styles.statusIndicator, { backgroundColor: statusColor }]}
             />
           </View>
-          <Text style={styles.name}>{user.name}</Text>
-          <Text style={styles.username}>@{user.username}</Text>
-          <Text style={styles.status}>{user.status}</Text>
+          <Text style={styles.name}>{displayName}</Text>
+          <Text style={styles.username}>@{displayUsername}</Text>
+          <Text style={styles.status}>{displayStatus}</Text>
 
-          {user.bio && <Text style={styles.bio}>{user.bio}</Text>}
+          {displayBio && <Text style={styles.bio}>{displayBio}</Text>}
 
           {/* Action Buttons */}
           <View style={styles.actionButtons}>
-            <TouchableOpacity style={styles.primaryButton}>
+            <TouchableOpacity
+              style={styles.primaryButton}
+              onPress={handleMessage}
+            >
               <MaterialCommunityIcons
                 name="message-text"
                 size={20}
@@ -197,11 +320,17 @@ export default function UserProfile() {
               />
               <Text style={styles.primaryButtonText}>Message</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleCall}
+            >
               <MaterialCommunityIcons name="phone" size={20} color="#6D5FFD" />
               <Text style={styles.secondaryButtonText}>Call</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.secondaryButton}>
+            <TouchableOpacity
+              style={styles.secondaryButton}
+              onPress={handleVideoCall}
+            >
               <MaterialCommunityIcons name="video" size={20} color="#6D5FFD" />
               <Text style={styles.secondaryButtonText}>Video</Text>
             </TouchableOpacity>
@@ -214,23 +343,29 @@ export default function UserProfile() {
 
           <View style={styles.infoItem}>
             <View style={styles.infoIcon}>
-              <MaterialCommunityIcons name="phone" size={20} color="#6D5FFD" />
-            </View>
-            <View style={styles.infoContent}>
-              <Text style={styles.infoLabel}>Phone</Text>
-              <Text style={styles.infoValue}>{user.phone}</Text>
-            </View>
-          </View>
-
-          <View style={styles.infoItem}>
-            <View style={styles.infoIcon}>
               <MaterialCommunityIcons name="email" size={20} color="#6D5FFD" />
             </View>
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>{user.email}</Text>
+              <Text style={styles.infoValue}>{displayEmail}</Text>
             </View>
           </View>
+
+          {user.phone && (
+            <View style={styles.infoItem}>
+              <View style={styles.infoIcon}>
+                <MaterialCommunityIcons
+                  name="phone"
+                  size={20}
+                  color="#6D5FFD"
+                />
+              </View>
+              <View style={styles.infoContent}>
+                <Text style={styles.infoLabel}>Phone</Text>
+                <Text style={styles.infoValue}>{user.phone}</Text>
+              </View>
+            </View>
+          )}
 
           <View style={styles.infoItem}>
             <View style={styles.infoIcon}>
@@ -242,34 +377,38 @@ export default function UserProfile() {
             </View>
             <View style={styles.infoContent}>
               <Text style={styles.infoLabel}>Joined</Text>
-              <Text style={styles.infoValue}>{user.joinedDate}</Text>
+              <Text style={styles.infoValue}>
+                {user.joinedDate || "Recently"}
+              </Text>
             </View>
           </View>
         </View>
 
         {/* Groups Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Mutual Groups</Text>
-          <TouchableOpacity style={styles.groupsCard}>
-            <MaterialCommunityIcons
-              name="account-group"
-              size={24}
-              color="#6D5FFD"
-            />
-            <Text style={styles.groupsText}>
-              {user.mutualGroups} groups in common
-            </Text>
-            <MaterialCommunityIcons
-              name="chevron-right"
-              size={24}
-              color="#9E9E9E"
-            />
-          </TouchableOpacity>
-        </View>
+        {user.mutualGroups && (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Mutual Groups</Text>
+            <TouchableOpacity style={styles.groupsCard}>
+              <MaterialCommunityIcons
+                name="account-group"
+                size={24}
+                color="#6D5FFD"
+              />
+              <Text style={styles.groupsText}>
+                {user.mutualGroups} groups in common
+              </Text>
+              <MaterialCommunityIcons
+                name="chevron-right"
+                size={24}
+                color="#9E9E9E"
+              />
+            </TouchableOpacity>
+          </View>
+        )}
 
         {/* Danger Zone */}
         <View style={styles.section}>
-          <TouchableOpacity style={styles.dangerButton}>
+          <TouchableOpacity style={styles.dangerButton} onPress={handleBlock}>
             <MaterialCommunityIcons
               name="block-helper"
               size={20}
@@ -277,7 +416,7 @@ export default function UserProfile() {
             />
             <Text style={styles.dangerButtonText}>Block User</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.dangerButton}>
+          <TouchableOpacity style={styles.dangerButton} onPress={handleReport}>
             <MaterialCommunityIcons name="flag" size={20} color="#F44336" />
             <Text style={styles.dangerButtonText}>Report User</Text>
           </TouchableOpacity>

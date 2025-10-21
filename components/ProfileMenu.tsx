@@ -1,15 +1,15 @@
-import {
-  StyleSheet,
-  View,
-  Text,
-  TouchableOpacity,
-  Modal,
-  Alert,
-} from "react-native";
-import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { useAuth } from "@/contexts/AuthContext";
+import {
+  Alert,
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 interface ProfileMenuProps {
   visible: boolean;
@@ -37,12 +37,12 @@ export default function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
 
   const menuItems = [
     {
-      id: "edit",
-      title: "Edit Profile",
-      icon: "account-edit-outline",
+      id: "settings",
+      title: "Profile Settings",
+      icon: "cog-outline",
       onPress: () => {
         onClose();
-        Alert.alert("Edit Profile", "Profile editing feature coming soon!");
+        router.push("/profile-settings");
       },
     },
     {
@@ -89,13 +89,27 @@ export default function ProfileMenu({ visible, onClose }: ProfileMenuProps) {
         <TouchableOpacity style={styles.menuContainer} activeOpacity={1}>
           {/* User Info Header */}
           <View style={styles.userHeader}>
-            <View style={styles.avatarContainer}>
-              <MaterialCommunityIcons
-                name="account-circle"
-                size={60}
-                color="#6D5FFD"
-              />
-            </View>
+            <TouchableOpacity
+              style={styles.avatarContainer}
+              onPress={() => {
+                onClose();
+                router.push("/profile-settings");
+              }}
+            >
+              {user?.avatar ? (
+                <Image
+                  source={{ uri: user.avatar }}
+                  style={styles.avatarImage}
+                  resizeMode="cover"
+                />
+              ) : (
+                <MaterialCommunityIcons
+                  name="account-circle"
+                  size={60}
+                  color="#6D5FFD"
+                />
+              )}
+            </TouchableOpacity>
             <View style={styles.userInfo}>
               <Text style={styles.userName}>{user?.fullName || "User"}</Text>
               <Text style={styles.userRole}>{user?.role || "Member"}</Text>
@@ -175,6 +189,11 @@ const styles = StyleSheet.create({
   },
   avatarContainer: {
     marginRight: 16,
+  },
+  avatarImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
   },
   userInfo: {
     flex: 1,

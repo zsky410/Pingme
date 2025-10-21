@@ -1,110 +1,165 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import {
+  signOut as firebaseSignOut,
+  User as FirebaseUser,
+  onAuthStateChanged,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth, db } from "../config/firebase";
 
 interface User {
+  uid: string;
+  email: string;
   username: string;
   fullName: string;
   role: string;
+  avatar?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  login: (
+    email: string,
+    password: string
+  ) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
+  reloadUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// Mock user database (trong production sẽ call API)
-const MOCK_USERS = [
-  {
-    username: "admin",
-    password: "123",
-    fullName: "Administrator",
-    role: "Admin",
-  },
-  {
-    username: "john",
-    password: "john123",
-    fullName: "John Doe",
-    role: "User",
-  },
-  {
-    username: "sarah",
-    password: "sarah123",
-    fullName: "Sarah Wilson",
-    role: "User",
-  },
-];
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Check if user is already logged in on app start
+  // Listen for authentication state changes
   useEffect(() => {
-    checkAuthStatus();
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (firebaseUser: FirebaseUser | null) => {
+        if (firebaseUser) {
+          try {
+            // Get user data from Firestore
+            const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+            if (userDoc.exists()) {
+              const userData = userDoc.data();
+              setUser({
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                username: userData.username,
+                fullName: userData.fullName,
+                role: userData.role || "User",
+                avatar: userData.avatar
+                  ? `data:${userData.avatarType || "image/jpeg"};base64,${
+                      userData.avatar
+                    }`
+                  : "",
+              });
+            } else {
+              // If user document doesn't exist, create it
+              const newUser: User = {
+                uid: firebaseUser.uid,
+                email: firebaseUser.email || "",
+                username: firebaseUser.displayName?.split(" ")[0] || "",
+                fullName: firebaseUser.displayName || "",
+                role: "User",
+                avatar: firebaseUser.photoURL || "",
+              };
+              await setDoc(doc(db, "users", firebaseUser.uid), newUser);
+              setUser(newUser);
+            }
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+          }
+        } else {
+          setUser(null);
+        }
+        setIsLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
-  const checkAuthStatus = async () => {
+  const login = async (
+    email: string,
+    password: string
+  ): Promise<{ success: boolean; error?: string }> => {
     try {
-      const userData = await AsyncStorage.getItem("@user_data");
-      if (userData) {
-        setUser(JSON.parse(userData));
+      setIsLoading(true);
+      await signInWithEmailAndPassword(auth, email, password);
+      return { success: true };
+    } catch (error: any) {
+      // Handle specific Firebase auth errors
+      let errorMessage = "Login failed. Please try again.";
+
+      switch (error.code) {
+        case "auth/invalid-credential":
+          errorMessage = "Invalid email or password.";
+          break;
+        case "auth/user-not-found":
+          errorMessage = "No account found with this email.";
+          break;
+        case "auth/wrong-password":
+          errorMessage = "Incorrect password.";
+          break;
+        case "auth/invalid-email":
+          errorMessage = "Invalid email format.";
+          break;
+        case "auth/too-many-requests":
+          errorMessage = "Too many login attempts. Please try again later.";
+          break;
+        case "auth/network-request-failed":
+          errorMessage =
+            "Network error. Please check your internet connection.";
+          break;
+        default:
+          errorMessage = "An error occurred. Please try again.";
       }
-    } catch (error) {
-      console.error("Error checking auth status:", error);
+
+      // Log error for debugging but don't throw it
+      console.log("Login failed:", error.code, errorMessage);
+
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const login = async (
-    username: string,
-    password: string
-  ): Promise<boolean> => {
+  const reloadUser = async () => {
     try {
-      console.log("Login attempt:", { username, password });
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Find user in mock database
-      const foundUser = MOCK_USERS.find(
-        (u) => u.username === username && u.password === password
-      );
-
-      console.log("Found user:", foundUser);
-
-      if (foundUser) {
-        const userData: User = {
-          username: foundUser.username,
-          fullName: foundUser.fullName,
-          role: foundUser.role,
-        };
-
-        // Save to AsyncStorage
-        await AsyncStorage.setItem("@user_data", JSON.stringify(userData));
-        setUser(userData);
-        console.log("Login successful:", userData);
-        return true;
+      const firebaseUser = auth.currentUser;
+      if (firebaseUser) {
+        // Get fresh user data from Firestore
+        const userDoc = await getDoc(doc(db, "users", firebaseUser.uid));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          setUser({
+            uid: firebaseUser.uid,
+            email: firebaseUser.email || "",
+            username: userData.username,
+            fullName: userData.fullName,
+            role: userData.role || "User",
+            avatar: userData.avatar
+              ? `data:${userData.avatarType || "image/jpeg"};base64,${
+                  userData.avatar
+                }`
+              : "",
+          });
+          console.log("User data reloaded successfully");
+        }
       }
-
-      console.log("Login failed: user not found");
-      return false;
     } catch (error) {
-      console.error("Login error:", error);
-      return false;
+      console.error("Error reloading user:", error);
     }
   };
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem("@user_data");
-      setUser(null);
-      console.log("User logged out successfully");
+      await firebaseSignOut(auth);
     } catch (error) {
       console.error("Logout error:", error);
     }
@@ -118,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         login,
         logout,
+        reloadUser,
       }}
     >
       {children}

@@ -1,10 +1,12 @@
-import { Tabs } from "expo-router";
+import { useAuth } from "@/contexts/AuthContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Platform } from "react-native";
+import { Tabs } from "expo-router";
+import { Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
+  const { user } = useAuth();
 
   return (
     <Tabs
@@ -50,6 +52,25 @@ export default function TabLayout() {
               color={color}
             />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) =>
+            user?.avatar ? (
+              <Image
+                source={{ uri: user.avatar }}
+                style={{ width: size, height: size, borderRadius: size / 2 }}
+              />
+            ) : (
+              <MaterialCommunityIcons
+                name="account-circle"
+                size={size}
+                color={color}
+              />
+            ),
         }}
       />
     </Tabs>
