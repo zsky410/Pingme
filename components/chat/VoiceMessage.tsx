@@ -77,12 +77,13 @@ export default function VoiceMessage({
           // Load and play new sound
           // For demo purposes, using a sample audio URL
           // In production, use voiceUri from the message
-          const audioSource = voiceUri
-            ? { uri: voiceUri }
-            : // Demo audio - a short notification sound
-              {
-                uri: "https://actions.google.com/sounds/v1/alarms/beep_short.ogg",
-              };
+          const audioSource =
+            voiceUri && voiceUri !== "mock-voice-uri"
+              ? { uri: voiceUri }
+              : // Demo audio - a short notification sound
+                {
+                  uri: "https://www.soundjay.com/misc/sounds/bell-ringing-05.wav",
+                };
 
           const { sound: newSound } = await Audio.Sound.createAsync(
             audioSource,
@@ -133,8 +134,8 @@ export default function VoiceMessage({
   return (
     <View
       style={[
-        styles.container,
-        isMine ? styles.containerMine : styles.containerTheirs,
+        styles.messageBubble,
+        isMine ? styles.myBubble : styles.theirBubble,
       ]}
     >
       {/* Play/Pause Button */}
@@ -147,20 +148,20 @@ export default function VoiceMessage({
       >
         <MaterialCommunityIcons
           name={isPlaying ? "pause" : "play"}
-          size={24}
+          size={20}
           color={isMine ? "#FFFFFF" : "#6D5FFD"}
         />
       </TouchableOpacity>
 
-      {/* Waveform & Progress */}
-      <View style={styles.contentContainer}>
-        {/* Wave bars */}
+      {/* Waveform & Time Container */}
+      <View style={styles.waveformTimeContainer}>
+        {/* Waveform */}
         <View style={styles.waveformContainer}>
           {[...Array(25)].map((_, index) => {
-            // Generate consistent heights for each bar
+            // Generate varied heights for waveform effect
             const heights = [
-              8, 16, 12, 20, 14, 10, 18, 22, 16, 12, 20, 14, 18, 16, 12, 20, 14,
-              10, 16, 20, 12, 18, 14, 16, 10,
+              4, 8, 6, 12, 8, 4, 10, 14, 8, 6, 12, 8, 10, 8, 6, 12, 8, 4, 8, 10,
+              6, 10, 8, 12, 6,
             ];
             const height = heights[index % heights.length];
             const progress = currentTime / duration;
@@ -180,7 +181,7 @@ export default function VoiceMessage({
                           : "#6D5FFD"
                         : isMine
                         ? "rgba(255, 255, 255, 0.4)"
-                        : "rgba(109, 95, 253, 0.3)",
+                        : "rgba(0, 0, 0, 0.2)",
                   },
                 ]}
               />
@@ -203,25 +204,28 @@ export default function VoiceMessage({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  messageBubble: {
     flexDirection: "row",
     alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    maxWidth: "85%",
+    minWidth: 200,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderRadius: 16,
-    maxWidth: "75%",
     gap: 12,
   },
-  containerMine: {
+  myBubble: {
     backgroundColor: "#6D5FFD",
+    borderBottomRightRadius: 4,
   },
-  containerTheirs: {
+  theirBubble: {
     backgroundColor: "#F0F0F0",
+    borderBottomLeftRadius: 4,
   },
   playButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -231,23 +235,29 @@ const styles = StyleSheet.create({
   playButtonTheirs: {
     backgroundColor: "rgba(109, 95, 253, 0.1)",
   },
-  contentContainer: {
+  waveformTimeContainer: {
     flex: 1,
+    flexDirection: "column",
+    alignItems: "flex-start",
+    justifyContent: "center",
     gap: 4,
   },
   waveformContainer: {
     flexDirection: "row",
     alignItems: "center",
-    height: 24,
-    gap: 2,
+    height: 18,
+    gap: 2.5,
+    width: "100%",
   },
   waveBar: {
-    width: 3,
-    borderRadius: 2,
+    width: 2,
+    borderRadius: 1,
   },
   timeText: {
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: "500",
+    textAlign: "left",
+    alignSelf: "flex-start",
   },
   timeTextMine: {
     color: "rgba(255, 255, 255, 0.8)",

@@ -6,14 +6,16 @@ import {
   Pressable,
   TouchableOpacity,
   Animated,
+  Alert,
 } from "react-native";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 
 interface VoiceRecorderProps {
   visible: boolean;
   onClose: () => void;
-  onSendVoice: (duration: number) => void;
+  onSendVoice: (duration: number, audioUri?: string) => void;
 }
 
 export default function VoiceRecorder({
@@ -22,41 +24,120 @@ export default function VoiceRecorder({
   onSendVoice,
 }: VoiceRecorderProps) {
   const [duration, setDuration] = useState(0);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
   const waveAnimation = useRef(new Animated.Value(0)).current;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  const startRecording = useCallback(() => {
-    setDuration(0);
+  // Initialize audio mode
+  useEffect(() => {
+    const setupAudio = async () => {
+      try {
+        await Audio.setAudioModeAsync({
+          allowsRecordingIOS: true,
+          playsInSilentModeIOS: true,
+          staysActiveInBackground: false,
+          shouldDuckAndroid: true,
+        });
+      } catch (error) {
+        console.error("Error setting up audio:", error);
+      }
+    };
 
-    // Start timer
-    intervalRef.current = setInterval(() => {
-      setDuration((prev) => prev + 1);
-    }, 1000) as unknown as NodeJS.Timeout;
+    setupAudio();
+  }, []);
 
-    // Start wave animation
-    Animated.loop(
-      Animated.sequence([
-        Animated.timing(waveAnimation, {
-          toValue: 1,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-        Animated.timing(waveAnimation, {
-          toValue: 0,
-          duration: 500,
-          useNativeDriver: true,
-        }),
-      ])
-    ).start();
-  }, [waveAnimation]);
+  const startRecording = useCallback(async () => {
+    try {
+      // Clean up any existing recording first
+      if (recording) {
+        try {
+          await recording.stopAndUnloadAsync();
+        } catch (e) {
+          console.log("Cleaning up existing recording:", e);
+        }
+        setRecording(null);
+      }
 
-  const stopRecording = useCallback(() => {
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
+      // Request permissions first
+      const { status } = await Audio.requestPermissionsAsync();
+      if (status !== "granted") {
+        console.error("Audio recording permission not granted");
+        Alert.alert(
+          "Permission Required",
+          "Please allow microphone access to record voice messages."
+        );
+        return;
+      }
+
+      setDuration(0);
+      setIsRecording(true);
+
+      // Start recording
+      const { recording: newRecording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(newRecording);
+
+      // Start timer
+      intervalRef.current = setInterval(() => {
+        setDuration((prev) => prev + 1);
+      }, 1000) as unknown as NodeJS.Timeout;
+
+      // Start wave animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(waveAnimation, {
+            toValue: 1,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+          Animated.timing(waveAnimation, {
+            toValue: 0,
+            duration: 500,
+            useNativeDriver: true,
+          }),
+        ])
+      ).start();
+    } catch (error) {
+      console.error("Error starting recording:", error);
+      setIsRecording(false);
+      Alert.alert(
+        "Recording Error",
+        "Unable to start recording. Please check microphone permissions."
+      );
     }
-    waveAnimation.stopAnimation();
-  }, [waveAnimation]);
+  }, [waveAnimation, recording]);
+
+  const stopRecording = useCallback(async () => {
+    try {
+      // Stop animation first
+      waveAnimation.stopAnimation();
+
+      // Clear timer
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+
+      // Stop recording
+      if (recording) {
+        await recording.stopAndUnloadAsync();
+        setRecording(null);
+      }
+
+      setIsRecording(false);
+    } catch (error) {
+      console.error("Error stopping recording:", error);
+      // Force cleanup even if there's an error
+      setIsRecording(false);
+      setRecording(null);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }, [recording, waveAnimation]);
 
   useEffect(() => {
     if (visible) {
@@ -68,21 +149,40 @@ export default function VoiceRecorder({
     }
 
     return () => {
+      // Cleanup on unmount
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      if (recording) {
+        recording.stopAndUnloadAsync().catch(console.error);
       }
     };
-  }, [visible, startRecording, stopRecording]);
+  }, [visible]); // Remove dependencies to avoid infinite loops
 
   const handleCancel = () => {
     stopRecording();
     onClose();
   };
 
-  const handleSend = () => {
-    stopRecording();
-    onSendVoice(duration);
-    onClose();
+  const handleSend = async () => {
+    try {
+      let audioUri: string | undefined;
+
+      if (recording) {
+        // Get URI before stopping recording
+        audioUri = recording.getURI() || undefined;
+        await stopRecording();
+      } else {
+        await stopRecording();
+      }
+
+      onSendVoice(duration, audioUri);
+      onClose();
+    } catch (error) {
+      console.error("Error sending voice:", error);
+      onClose();
+    }
   };
 
   const formatDuration = (seconds: number) => {

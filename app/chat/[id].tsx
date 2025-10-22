@@ -872,20 +872,14 @@ export default function ChatScreen() {
     setShowVoiceRecorder(true);
   };
 
-  const handleSendVoice = (duration: number) => {
+  const handleSendVoice = (duration: number, audioUri?: string) => {
     // Create voice message
     const newMessage: Message = {
       id: Date.now().toString(),
       type: "voice",
       duration: duration,
-      voiceUri: "mock-voice-uri", // In real app, this would be the actual audio file URI
-      time: new Date()
-        .toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        })
-        .toLowerCase(),
+      voiceUri: audioUri || "mock-voice-uri", // Use real audio URI if available
+      time: new Date().toISOString(), // Use ISO string instead of formatted time
       isMine: true,
       status: "sent",
     };
@@ -1190,28 +1184,11 @@ export default function ChatScreen() {
       )}
 
       {item.type === "voice" && (
-        <View>
-          <VoiceMessage
-            duration={item.duration || 0}
-            isMine={item.isMine}
-            voiceUri={item.voiceUri}
-          />
-          <View
-            style={[
-              styles.mediaTimeContainer,
-              item.isMine && styles.mediaTimeContainerMine,
-            ]}
-          >
-            <Text
-              style={[styles.mediaTime, item.isMine && styles.mediaTimeMine]}
-            >
-              {item.time}
-            </Text>
-            {item.isMine && item.status && (
-              <Ionicons name="checkmark-done" size={14} color="#6D5FFD" />
-            )}
-          </View>
-        </View>
+        <VoiceMessage
+          duration={item.duration || 0}
+          isMine={item.isMine}
+          voiceUri={item.voiceUri}
+        />
       )}
 
       {item.type === "poll" && item.poll && (
