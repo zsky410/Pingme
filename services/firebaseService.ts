@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   endAt,
   getDoc,
@@ -14,7 +15,13 @@ import {
   updateDoc,
   where,
 } from "firebase/firestore";
-import { db } from "../config/firebase";
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from "firebase/storage";
+import { db, storage } from "../config/firebase";
 
 // User operations
 export const userService = {
@@ -55,7 +62,11 @@ export const userService = {
 
       // Convert blob to base64 (already optimized by ImagePicker quality setting)
       const base64 = await this.blobToBase64(file);
-      console.log("Base64 conversion successful, length:", base64.length);
+      console.log(
+        "Base64 conversion successful, length:",
+        base64.length,
+        "characters"
+      );
 
       // Check if base64 is too long (Firebase Auth limit is ~2048 chars)
       if (base64.length > 1500) {
@@ -75,7 +86,7 @@ export const userService = {
 
       console.log("Avatar saved to Firestore successfully");
       return base64; // Return base64 as "URL"
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error uploading avatar:", error);
       console.error("Error code:", error.code);
       console.error("Error message:", error.message);
@@ -112,10 +123,13 @@ export const chatService = {
       where("participants", "array-contains", participants[0])
     );
     const querySnapshot = await getDocs(q);
-    const allChats = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allChats = querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as any)
+    );
 
     const existingChat = allChats.find(
       (chat: any) =>
@@ -125,35 +139,7 @@ export const chatService = {
     );
 
     if (existingChat) {
-      // Check if any participant has cleared this chat
-      const clearedBy = existingChat.clearedBy || {};
-      const clearedParticipants = Object.keys(clearedBy);
-
-      if (clearedParticipants.length > 0) {
-        console.log(
-          "Restoring chat for cleared participants:",
-          clearedParticipants
-        );
-
-        // Restore chat for cleared participants
-        const updatedClearedBy = { ...clearedBy };
-        clearedParticipants.forEach((userId) => {
-          delete updatedClearedBy[userId];
-        });
-
-        // Update clearedBy field
-        await updateDoc(doc(db, "chats", existingChat.id), {
-          clearedBy: updatedClearedBy,
-        });
-
-        // Restore message visibility for cleared participants
-        for (const userId of clearedParticipants) {
-          await this.updateMessagesVisibility(existingChat.id, userId, true);
-        }
-
-        console.log("Chat restored successfully");
-      }
-
+      console.log("Chat already exists, returning existing chat");
       return { id: existingChat.id };
     }
 
@@ -163,8 +149,6 @@ export const chatService = {
       createdAt: Timestamp.now(),
       lastMessage: null,
       lastMessageTime: null,
-      // Track who has cleared this chat
-      clearedBy: {},
     };
     return await addDoc(collection(db, "chats"), chatData);
   },
@@ -177,19 +161,17 @@ export const chatService = {
       where("participants", "array-contains", uid)
     );
     const querySnapshot = await getDocs(q);
-    const allChats = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
+    const allChats = querySnapshot.docs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          ...doc.data(),
+        } as any)
+    );
 
     // Filter out chats that user has cleared
-    const activeChats = allChats.filter((chat) => {
-      const clearedBy = chat.clearedBy || {};
-      return !clearedBy[uid]; // Only show chats user hasn't cleared
-    });
-
     // Sort manually by lastMessageTime
-    return activeChats.sort((a, b) => {
+    return allChats.sort((a: any, b: any) => {
       const timeA = a.lastMessageTime?.toDate?.() || new Date(0);
       const timeB = b.lastMessageTime?.toDate?.() || new Date(0);
       return timeB.getTime() - timeA.getTime();
@@ -209,13 +191,7 @@ export const chatService = {
     const chatData = chatDoc.data();
     const participants = chatData?.participants || [];
 
-    // Only include participants who haven't cleared the chat
-    const clearedBy = chatData?.clearedBy || {};
-    const activeParticipants = participants.filter(
-      (uid: string) => !clearedBy[uid]
-    );
-
-    console.log("Active participants for message:", activeParticipants);
+    console.log("Participants for message:", participants);
 
     const messageData = {
       chatId,
@@ -226,7 +202,7 @@ export const chatService = {
       reactions: {},
       edited: false,
       // Track who can see this message
-      visibleTo: activeParticipants,
+      visibleTo: participants,
     };
     const messageRef = await addDoc(collection(db, "messages"), messageData);
 
@@ -238,6 +214,93 @@ export const chatService = {
     });
 
     return messageRef;
+  },
+
+  // Edit message
+  async editMessage(messageId: string, userId: string, newContent: string) {
+    try {
+      // First, get the message to check if user is the sender
+      const messageRef = doc(db, "messages", messageId);
+      const messageDoc = await getDoc(messageRef);
+
+      if (!messageDoc.exists()) {
+        throw new Error("Message not found");
+      }
+
+      const messageData = messageDoc.data();
+
+      // Only allow editing if user is the sender
+      if (messageData.senderId !== userId) {
+        throw new Error("You can only edit your own messages");
+      }
+
+      // Update the message content and mark as edited
+      await updateDoc(messageRef, {
+        content: newContent,
+        edited: true,
+        editedAt: Timestamp.now(),
+      });
+
+      console.log("Message edited successfully:", messageId);
+      return true;
+    } catch (error) {
+      console.error("Error editing message:", error);
+      throw error;
+    }
+  },
+
+  // Delete message
+  async deleteMessage(messageId: string, userId: string) {
+    try {
+      // First, get the message to check if user is the sender
+      const messageRef = doc(db, "messages", messageId);
+      const messageDoc = await getDoc(messageRef);
+
+      if (!messageDoc.exists()) {
+        throw new Error("Message not found");
+      }
+
+      const messageData = messageDoc.data();
+
+      // Only allow deletion if user is the sender
+      if (messageData.senderId !== userId) {
+        throw new Error("You can only delete your own messages");
+      }
+
+      // Get current deletedBy array
+      const deletedBy = messageData.deletedBy || [];
+
+      // Add current user to deletedBy array
+      const updatedDeletedBy = [...deletedBy, userId];
+
+      // Check if all participants have deleted this message
+      const chatRef = doc(db, "chats", messageData.chatId);
+      const chatDoc = await getDoc(chatRef);
+      const chatData = chatDoc.data();
+      const participants = chatData?.participants || [];
+
+      // If all participants have deleted, remove message completely
+      if (updatedDeletedBy.length >= participants.length) {
+        await deleteDoc(messageRef);
+        console.log("Message completely deleted:", messageId);
+      } else {
+        // Otherwise, just mark as deleted by this user and remove from visibleTo
+        const visibleTo = messageData.visibleTo || [];
+        const updatedVisibleTo = visibleTo.filter(
+          (uid: string) => uid !== userId
+        );
+
+        await updateDoc(messageRef, {
+          deletedBy: updatedDeletedBy,
+          deletedAt: Timestamp.now(),
+          visibleTo: updatedVisibleTo,
+        });
+        console.log("Message marked as deleted by user:", messageId, userId);
+      }
+    } catch (error) {
+      console.error("Error deleting message:", error);
+      throw error;
+    }
   },
 
   // Get messages for a chat
@@ -255,16 +318,20 @@ export const chatService = {
         limit(limitCount)
       );
       const querySnapshot = await getDocs(q);
-      let messages = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      let messages = querySnapshot.docs.map(
+        (doc) =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+          } as any)
+      );
 
       // Filter by visibility if userId provided
       if (userId) {
         messages = messages.filter((message) => {
           const visibleTo = message.visibleTo || [];
-          return visibleTo.includes(userId);
+          const deletedBy = message.deletedBy || [];
+          return visibleTo.includes(userId) && !deletedBy.includes(userId);
         });
       }
 
@@ -286,46 +353,20 @@ export const chatService = {
 
         // Filter by visibility if userId provided
         if (userId) {
-          messages = messages.filter((message) => {
+          messages = messages.filter((message: any) => {
             const visibleTo = message.visibleTo || [];
-            return visibleTo.includes(userId);
+            const deletedBy = message.deletedBy || [];
+            return visibleTo.includes(userId) && !deletedBy.includes(userId);
           });
         }
 
         // Sort manually by timestamp
-        return messages.sort((a, b) => {
+        return messages.sort((a: any, b: any) => {
           const timeA = a.timestamp?.toDate?.() || new Date(0);
           const timeB = b.timestamp?.toDate?.() || new Date(0);
           return timeB.getTime() - timeA.getTime();
         });
       }
-      throw error;
-    }
-  },
-
-  // Clear chat for current user (hide from their chat list but keep chat link)
-  async clearChatForUser(chatId: string, userId: string) {
-    try {
-      const chatRef = doc(db, "chats", chatId);
-      const chatDoc = await getDoc(chatRef);
-
-      if (chatDoc.exists()) {
-        const chatData = chatDoc.data();
-        const clearedBy = chatData.clearedBy || {};
-
-        // Mark user as having cleared this chat
-        clearedBy[userId] = Timestamp.now();
-
-        // Update clearedBy field
-        await updateDoc(chatRef, {
-          clearedBy: clearedBy,
-        });
-
-        // Remove user from visibleTo of all messages in this chat
-        await this.updateMessagesVisibility(chatId, userId, false);
-      }
-    } catch (error) {
-      console.log("Clear chat error:", error);
       throw error;
     }
   },
@@ -343,9 +384,16 @@ export const chatService = {
       );
       const querySnapshot = await getDocs(messagesQuery);
 
-      const batch = [];
+      const batch: any[] = [];
       querySnapshot.docs.forEach((doc) => {
         const messageData = doc.data();
+
+        // Skip messages that have been deleted by current user
+        const deletedBy = messageData.deletedBy || [];
+        if (deletedBy.includes(userId)) {
+          return;
+        }
+
         const visibleTo = messageData.visibleTo || [];
 
         let updatedVisibleTo;
@@ -383,19 +431,23 @@ export const chatService = {
       return onSnapshot(
         q,
         (querySnapshot) => {
-          const allChats = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          const allChats = querySnapshot.docs.map(
+            (doc) =>
+              ({
+                id: doc.id,
+                ...doc.data(),
+              } as any)
+          );
 
-          // Filter out chats that user has cleared
-          const activeChats = allChats.filter((chat) => {
-            const clearedBy = chat.clearedBy || {};
-            return !clearedBy[userId];
+          // Filter out chats without messages
+          const activeChats = allChats.filter((chat: any) => {
+            const hasMessages =
+              chat.lastMessage && chat.lastMessage.trim() !== "";
+            return hasMessages;
           });
 
           // Sort manually by lastMessageTime
-          const sortedChats = activeChats.sort((a, b) => {
+          const sortedChats = activeChats.sort((a: any, b: any) => {
             const timeA = a.lastMessageTime?.toDate?.() || new Date(0);
             const timeB = b.lastMessageTime?.toDate?.() || new Date(0);
             return timeB.getTime() - timeA.getTime();
@@ -431,15 +483,19 @@ export const chatService = {
       return onSnapshot(
         q,
         (querySnapshot) => {
-          let messages = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
+          let messages = querySnapshot.docs.map(
+            (doc) =>
+              ({
+                id: doc.id,
+                ...doc.data(),
+              } as any)
+          );
 
-          // Filter by visibility
+          // Filter by visibility and exclude messages deleted by current user
           messages = messages.filter((message) => {
             const visibleTo = message.visibleTo || [];
-            return visibleTo.includes(userId);
+            const deletedBy = message.deletedBy || [];
+            return visibleTo.includes(userId) && !deletedBy.includes(userId);
           });
 
           // Sort by timestamp (oldest first)

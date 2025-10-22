@@ -8,7 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { MaterialCommunityIcons, Ionicons } from "@expo/vector-icons";
 
 interface EditMessageModalProps {
@@ -25,16 +25,30 @@ export default function EditMessageModal({
   onSave,
 }: EditMessageModalProps) {
   const [editedMessage, setEditedMessage] = useState(message);
+  const textInputRef = useRef<TextInput>(null);
 
   useEffect(() => {
     setEditedMessage(message);
   }, [message]);
 
+  useEffect(() => {
+    if (visible && textInputRef.current) {
+      // Focus the input when modal becomes visible
+      setTimeout(() => {
+        textInputRef.current?.focus();
+      }, 100);
+    }
+  }, [visible]);
+
   const handleSave = () => {
     if (editedMessage.trim()) {
-      onSave(editedMessage);
-      onClose();
+      onSave(editedMessage.trim());
     }
+  };
+
+  const handleCancel = () => {
+    setEditedMessage(message); // Reset to original message
+    onClose();
   };
 
   return (
@@ -42,7 +56,7 @@ export default function EditMessageModal({
       visible={visible}
       transparent
       animationType="slide"
-      onRequestClose={onClose}
+      onRequestClose={handleCancel}
     >
       <KeyboardAvoidingView
         style={styles.overlay}
@@ -51,69 +65,46 @@ export default function EditMessageModal({
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
+            <TouchableOpacity
+              onPress={handleCancel}
+              style={styles.cancelButton}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
             <Text style={styles.headerTitle}>Edit Message</Text>
-            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Ionicons name="close" size={24} color="#000000" />
+            <TouchableOpacity
+              style={[
+                styles.saveButton,
+                !editedMessage.trim() && styles.saveButtonDisabled,
+              ]}
+              onPress={handleSave}
+              disabled={!editedMessage.trim()}
+            >
+              <Text
+                style={[
+                  styles.saveButtonText,
+                  !editedMessage.trim() && styles.saveButtonTextDisabled,
+                ]}
+              >
+                Save
+              </Text>
             </TouchableOpacity>
           </View>
 
-          {/* Original Message */}
-          <View style={styles.originalMessageContainer}>
-            <Text style={styles.originalMessageLabel}>Original:</Text>
-            <Text style={styles.originalMessage}>{message}</Text>
-          </View>
-
-          {/* Input */}
+          {/* Edit Input */}
           <View style={styles.inputContainer}>
             <TextInput
+              ref={textInputRef}
               style={styles.input}
               value={editedMessage}
               onChangeText={setEditedMessage}
               multiline
-              autoFocus
-              placeholder="Edit your message..."
+              placeholder="Type your message..."
               placeholderTextColor="#BDBDBD"
+              textAlignVertical="top"
+              returnKeyType="default"
+              selectionColor="#6D5FFD"
             />
-          </View>
-
-          {/* Bottom Bar */}
-          <View style={styles.bottomBar}>
-            <View style={styles.actionButtons}>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons name="plus" size={24} color="#9E9E9E" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons
-                  name="microphone"
-                  size={24}
-                  color="#9E9E9E"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons
-                  name="emoticon-happy-outline"
-                  size={24}
-                  color="#9E9E9E"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons
-                  name="file-image-outline"
-                  size={24}
-                  color="#9E9E9E"
-                />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconButton}>
-                <MaterialCommunityIcons
-                  name="star-outline"
-                  size={24}
-                  color="#9E9E9E"
-                />
-              </TouchableOpacity>
-            </View>
-            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Ionicons name="checkmark" size={24} color="#FFFFFF" />
-            </TouchableOpacity>
           </View>
         </View>
       </KeyboardAvoidingView>
@@ -129,17 +120,17 @@ const styles = StyleSheet.create({
   },
   container: {
     backgroundColor: "#FFFFFF",
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingTop: 16,
-    maxHeight: "80%",
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: "90%",
+    minHeight: "50%",
   },
   header: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 20,
-    paddingBottom: 16,
+    paddingVertical: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#F0F0F0",
   },
@@ -147,56 +138,49 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
     color: "#000000",
+    flex: 1,
+    textAlign: "center",
   },
-  closeButton: {
-    padding: 4,
+  cancelButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
-  originalMessageContainer: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    backgroundColor: "#F9F9F9",
+  cancelButtonText: {
+    fontSize: 16,
+    color: "#6D5FFD",
+    fontWeight: "500",
   },
-  originalMessageLabel: {
-    fontSize: 12,
-    color: "#757575",
-    marginBottom: 4,
+  saveButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 4,
   },
-  originalMessage: {
-    fontSize: 14,
-    color: "#000000",
+  saveButtonText: {
+    fontSize: 16,
+    color: "#6D5FFD",
+    fontWeight: "600",
+  },
+  saveButtonDisabled: {
+    opacity: 0.5,
+  },
+  saveButtonTextDisabled: {
+    color: "#BDBDBD",
   },
   inputContainer: {
     flex: 1,
     paddingHorizontal: 20,
-    paddingVertical: 16,
+    paddingVertical: 20,
   },
   input: {
     fontSize: 16,
     color: "#000000",
-    maxHeight: 200,
-  },
-  bottomBar: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderTopWidth: 1,
-    borderTopColor: "#F0F0F0",
-  },
-  actionButtons: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  iconButton: {
-    padding: 8,
-  },
-  saveButton: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: "#6D5FFD",
-    alignItems: "center",
-    justifyContent: "center",
+    minHeight: 120,
+    maxHeight: 300,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#F8F9FA",
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E9ECEF",
+    textAlignVertical: "top",
   },
 });

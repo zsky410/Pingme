@@ -83,7 +83,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g1",
     type: "text",
     text: "Hey everyone! Welcome to the group! 🎉",
-    time: "9:15 am",
+    time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     isMine: false,
     senderName: "Sarah Wilson",
     senderAvatar: "https://i.pravatar.cc/150?img=10",
@@ -92,7 +92,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g2",
     type: "text",
     text: "Thanks @sarah! Happy to be here",
-    time: "9:16 am",
+    time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     isMine: false,
     senderName: "Mike Chen",
     senderAvatar: "https://i.pravatar.cc/150?img=12",
@@ -101,7 +101,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g3",
     type: "text",
     text: "Great to join this group! Looking forward to collaborating 😊",
-    time: "9:17 am",
+    time: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), // Yesterday
     isMine: true,
     status: "read",
   },
@@ -109,7 +109,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g4",
     type: "text",
     text: "Should we schedule our first meeting?",
-    time: "9:20 am",
+    time: new Date().toISOString(), // Today
     isMine: false,
     senderName: "Emily Davis",
     senderAvatar: "https://i.pravatar.cc/150?img=5",
@@ -118,7 +118,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g5",
     type: "text",
     text: "That's a good idea! What time works for everyone?",
-    time: "9:21 am",
+    time: new Date().toISOString(), // Today
     isMine: false,
     senderName: "John Smith",
     senderAvatar: "https://i.pravatar.cc/150?img=8",
@@ -127,7 +127,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g6",
     type: "text",
     text: "How about tomorrow at 2 PM?",
-    time: "9:22 am",
+    time: new Date().toISOString(), // Today
     isMine: true,
     status: "read",
   },
@@ -135,7 +135,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g7",
     type: "text",
     text: "Works for me! 👍",
-    time: "9:23 am",
+    time: new Date().toISOString(),
     isMine: false,
     senderName: "Mike Chen",
     senderAvatar: "https://i.pravatar.cc/150?img=12",
@@ -148,16 +148,19 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
             id: "1",
             name: "Mike Chen",
             avatar: "https://i.pravatar.cc/150?img=12",
+            emoji: "👍",
           },
           {
             id: "2",
             name: "Emily Davis",
             avatar: "https://i.pravatar.cc/150?img=5",
+            emoji: "👍",
           },
           {
             id: "3",
             name: "John Smith",
             avatar: "https://i.pravatar.cc/150?img=8",
+            emoji: "👍",
           },
         ],
       },
@@ -167,7 +170,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g8",
     type: "text",
     text: "Perfect! I'll send out a calendar invite",
-    time: "9:24 am",
+    time: new Date().toISOString(),
     isMine: false,
     senderName: "Sarah Wilson",
     senderAvatar: "https://i.pravatar.cc/150?img=10",
@@ -176,7 +179,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g9",
     type: "image",
     imageUri: "https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800",
-    time: "9:30 am",
+    time: new Date().toISOString(),
     isMine: false,
     senderName: "Emily Davis",
     senderAvatar: "https://i.pravatar.cc/150?img=5",
@@ -185,7 +188,7 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     id: "g10",
     type: "text",
     text: "Great! See you all tomorrow 🚀",
-    time: "9:32 am",
+    time: new Date().toISOString(),
     isMine: true,
     status: "read",
     reactions: [
@@ -197,21 +200,25 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
             id: "1",
             name: "Sarah Wilson",
             avatar: "https://i.pravatar.cc/150?img=10",
+            emoji: "🚀",
           },
           {
             id: "2",
             name: "Mike Chen",
             avatar: "https://i.pravatar.cc/150?img=12",
+            emoji: "🚀",
           },
           {
             id: "3",
             name: "Emily Davis",
             avatar: "https://i.pravatar.cc/150?img=5",
+            emoji: "🚀",
           },
           {
             id: "4",
             name: "John Smith",
             avatar: "https://i.pravatar.cc/150?img=8",
+            emoji: "🚀",
           },
         ],
       },
@@ -222,147 +229,10 @@ const SAMPLE_GROUP_MESSAGES: Message[] = [
     type: "voice",
     duration: 12,
     voiceUri: "mock-voice-uri",
-    time: "9:35 am",
+    time: new Date().toISOString(),
     isMine: false,
     senderName: "Emily Davis",
     senderAvatar: "https://i.pravatar.cc/150?img=5",
-  },
-];
-
-const SAMPLE_MESSAGES: Message[] = [
-  {
-    id: "1",
-    type: "text",
-    text: "Sure! Sending them over now.",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "1a",
-    type: "text",
-    text: "Hey @john @alex, can you check this out?",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "2",
-    type: "text",
-    text: "Awesome! Can I see a couple of pictures?",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "3",
-    type: "text",
-    text: "Thanks! Looks good.",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-    isEdited: true,
-  },
-  {
-    id: "4",
-    type: "text",
-    text: "I'll take it. Can you ship it?",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "5",
-    type: "text",
-    text: "Absolutely. Just send your address, and I'll ship it out.",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "6",
-    type: "text",
-    text: "Great, I'll send it now. Thanks!",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "7",
-    type: "text",
-    text: "Thank you!",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "8",
-    type: "file",
-    fileName: "File.pdf",
-    fileSize: "200 KB",
-    fileDate: "15 Oct, 2024",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "9",
-    type: "file",
-    fileName: "File.pdf",
-    fileSize: "200 KB",
-    fileDate: "15 Oct, 2024",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "10",
-    type: "image",
-    imageUri:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "11",
-    type: "image",
-    imageUri:
-      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "12",
-    type: "video",
-    videoUri: "https://sample-video.com/video.mp4",
-    thumbnailUri:
-      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "13",
-    type: "video",
-    videoUri: "https://sample-video.com/video.mp4",
-    thumbnailUri:
-      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800",
-    time: "4:56 pm",
-    isMine: false,
-  },
-  {
-    id: "14",
-    type: "voice",
-    duration: 15,
-    voiceUri: "mock-voice-uri",
-    time: "4:56 pm",
-    isMine: true,
-    status: "read",
-  },
-  {
-    id: "15",
-    type: "voice",
-    duration: 8,
-    voiceUri: "mock-voice-uri",
-    time: "4:56 pm",
-    isMine: false,
   },
 ];
 
@@ -379,8 +249,57 @@ export default function ChatScreen() {
   const [messages, setMessages] = useState<Message[]>(
     isGroupChat ? SAMPLE_GROUP_MESSAGES : []
   );
-  const [chatInfo, setChatInfo] = useState<any>(null);
   const [otherUser, setOtherUser] = useState<any>(null);
+
+  // Function to format date for timeline labels
+  const formatTimelineDate = (date: Date) => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const messageDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
+
+    if (messageDate.getTime() === today.getTime()) {
+      return "Hôm nay";
+    } else if (messageDate.getTime() === yesterday.getTime()) {
+      return "Hôm qua";
+    } else {
+      return date.toLocaleDateString("vi-VN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+    }
+  };
+
+  // Function to check if we need to show timeline separator
+  const shouldShowTimeline = (
+    currentMessage: Message,
+    previousMessage?: Message
+  ) => {
+    if (!previousMessage) return true;
+
+    const currentDate = new Date(currentMessage.time);
+    const previousDate = new Date(previousMessage.time);
+
+    const currentDay = new Date(
+      currentDate.getFullYear(),
+      currentDate.getMonth(),
+      currentDate.getDate()
+    );
+    const previousDay = new Date(
+      previousDate.getFullYear(),
+      previousDate.getMonth(),
+      previousDate.getDate()
+    );
+
+    return currentDay.getTime() !== previousDay.getTime();
+  };
 
   // Load chat info and messages for 1:1 chat
   useEffect(() => {
@@ -396,7 +315,6 @@ export default function ChatScreen() {
         const chatData = await chatService.getUserChats(user.uid);
         const currentChat = chatData.find((chat: any) => chat.id === id);
         console.log("Found chat:", currentChat);
-        setChatInfo(currentChat);
 
         // Set up real-time listener for messages
         unsubscribe = chatService.listenToMessages(
@@ -410,13 +328,9 @@ export default function ChatScreen() {
                 id: m.id,
                 type: (m.type as MessageType) || "text",
                 text: m.content,
-                time: new Date(
-                  m.timestamp?.toDate ? m.timestamp.toDate() : Date.now()
-                ).toLocaleTimeString("en-US", {
-                  hour: "numeric",
-                  minute: "2-digit",
-                  hour12: true,
-                }),
+                time: m.timestamp?.toDate
+                  ? m.timestamp.toDate().toISOString()
+                  : new Date().toISOString(),
                 isMine: user.uid === m.senderId,
               };
             });
@@ -439,7 +353,16 @@ export default function ChatScreen() {
             try {
               const otherUserData = await userService.getUserById(otherUserId);
               console.log("Loaded other user for ID:", otherUserId);
-              console.log("User data:", otherUserData);
+              console.log("User data:", {
+                id: otherUserData?.id,
+                fullName: otherUserData?.fullName,
+                email: otherUserData?.email,
+                username: otherUserData?.username,
+                role: otherUserData?.role,
+                avatarType: otherUserData?.avatarType,
+                avatarUpdatedAt: otherUserData?.avatarUpdatedAt,
+                hasAvatar: !!otherUserData?.avatar,
+              });
               if (otherUserData) {
                 setOtherUser(otherUserData);
               } else {
@@ -522,8 +445,6 @@ export default function ChatScreen() {
     uri: string;
     thumbnail: string;
   } | null>(null);
-  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
-  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showReactionDetails, setShowReactionDetails] = useState(false);
@@ -538,9 +459,10 @@ export default function ChatScreen() {
   ]);
   const [showMentionSuggestions, setShowMentionSuggestions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState("");
-  const [cursorPosition, setCursorPosition] = useState(0);
   const [showAttachmentMenu, setShowAttachmentMenu] = useState(false);
   const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
+  const [selectedMessage, setSelectedMessage] = useState<Message | null>(null);
+  const [showOptionsSheet, setShowOptionsSheet] = useState(false);
 
   // Ref for scrolling to bottom
   const flatListRef = useRef<FlatList>(null);
@@ -640,163 +562,50 @@ export default function ChatScreen() {
     }
   };
 
-  const handleLongPress = (message: Message) => {
-    setSelectedMessage(message);
-    setShowOptionsSheet(true);
-  };
-
-  const handleCopy = async () => {
-    if (selectedMessage?.text) {
-      await Clipboard.setStringAsync(selectedMessage.text);
-      Alert.alert("Copied", "Message copied to clipboard");
-    }
-  };
-
-  const handleTranslate = () => {
-    if (selectedMessage) {
-      // Mock translation - in real app, call translation API
-      const mockTranslation =
-        "बहुत बढ़िया! क्या मैं कुछ तस्वीरें देख सकता हूं?";
-      setMessages(
-        messages.map((msg) =>
-          msg.id === selectedMessage.id
-            ? { ...msg, translatedText: mockTranslation }
-            : msg
-        )
-      );
-    }
-  };
-
-  const handleEdit = () => {
-    if (selectedMessage?.isMine) {
-      setShowEditModal(true);
-    }
-  };
-
-  const handleSaveEdit = (newText: string) => {
-    if (selectedMessage) {
-      setMessages(
-        messages.map((msg) =>
-          msg.id === selectedMessage.id
-            ? { ...msg, text: newText, isEdited: true }
-            : msg
-        )
-      );
-    }
-  };
-
-  const handleDelete = () => {
-    if (selectedMessage) {
-      Alert.alert(
-        "Delete Message",
-        "Are you sure you want to delete this message?",
-        [
-          { text: "Cancel", style: "cancel" },
-          {
-            text: "Delete",
-            style: "destructive",
-            onPress: () => {
-              setMessages(
-                messages.filter((msg) => msg.id !== selectedMessage.id)
-              );
-            },
-          },
-        ]
-      );
-    }
-  };
-
+  // Handler functions
   const handleReaction = (emoji: string) => {
-    if (selectedMessage) {
-      // Add to recent emojis
-      setRecentEmojis((prev) => {
-        const filtered = prev.filter((e) => e !== emoji);
-        return [emoji, ...filtered].slice(0, 32);
-      });
+    if (!selectedMessage) return;
 
-      setMessages(
-        messages.map((msg) => {
-          if (msg.id === selectedMessage.id) {
-            const existingReactions = msg.reactions || [];
-            const existingReaction = existingReactions.find(
-              (r) => r.emoji === emoji
+    // Add to recent emojis
+    setRecentEmojis((prev) => {
+      const filtered = prev.filter((e) => e !== emoji);
+      return [emoji, ...filtered].slice(0, 32);
+    });
+
+    setMessages(
+      messages.map((msg) => {
+        if (msg.id === selectedMessage.id) {
+          const existingReactions = msg.reactions || [];
+          const existingReaction = existingReactions.find(
+            (r) => r.emoji === emoji
+          );
+
+          let newReactions;
+          if (existingReaction) {
+            // Check if user already reacted with this emoji
+            const alreadyReacted = existingReaction.users.some(
+              (u) => u.id === "me"
             );
 
-            let newReactions;
-            if (existingReaction) {
-              // Check if user already reacted with this emoji
-              const alreadyReacted = existingReaction.users.some(
-                (u) => u.id === "me"
+            if (alreadyReacted) {
+              // TOGGLE: Remove user's reaction
+              const newUsers = existingReaction.users.filter(
+                (u) => u.id !== "me"
               );
+              const newCount = existingReaction.count - 1;
 
-              if (alreadyReacted) {
-                // TOGGLE: Remove user's reaction
-                const newUsers = existingReaction.users.filter(
-                  (u) => u.id !== "me"
+              if (newCount === 0) {
+                // Remove entire reaction if no users left
+                newReactions = existingReactions.filter(
+                  (r) => r.emoji !== emoji
                 );
-                const newCount = existingReaction.count - 1;
-
-                if (newCount === 0) {
-                  // Remove entire reaction if no users left
-                  newReactions = existingReactions.filter(
-                    (r) => r.emoji !== emoji
-                  );
-                } else {
-                  // Update reaction with removed user
-                  newReactions = existingReactions.map((r) =>
-                    r.emoji === emoji
-                      ? { ...r, count: newCount, users: newUsers }
-                      : r
-                  );
-                }
               } else {
-                // Remove all other reactions from "me" first (only 1 reaction allowed)
-                const cleanedReactions = existingReactions
-                  .map((r) => ({
-                    ...r,
-                    users: r.users.filter((u) => u.id !== "me"),
-                    count: r.users.filter((u) => u.id !== "me").length,
-                  }))
-                  .filter((r) => r.count > 0);
-
-                // Add current user to this emoji reaction
-                const cleanedExisting = cleanedReactions.find(
-                  (r) => r.emoji === emoji
+                // Update reaction with removed user
+                newReactions = existingReactions.map((r) =>
+                  r.emoji === emoji
+                    ? { ...r, count: newCount, users: newUsers }
+                    : r
                 );
-
-                if (cleanedExisting) {
-                  newReactions = cleanedReactions.map((r) =>
-                    r.emoji === emoji
-                      ? {
-                          ...r,
-                          count: r.count + 1,
-                          users: [
-                            ...r.users,
-                            {
-                              id: "me",
-                              name: "You",
-                              avatar: "https://i.pravatar.cc/150?img=10",
-                            },
-                          ],
-                        }
-                      : r
-                  );
-                } else {
-                  newReactions = [
-                    ...cleanedReactions,
-                    {
-                      emoji,
-                      count: 1,
-                      users: [
-                        {
-                          id: "me",
-                          name: "You",
-                          avatar: "https://i.pravatar.cc/150?img=10",
-                        },
-                      ],
-                    },
-                  ];
-                }
               }
             } else {
               // Remove all other reactions from "me" first (only 1 reaction allowed)
@@ -808,29 +617,77 @@ export default function ChatScreen() {
                 }))
                 .filter((r) => r.count > 0);
 
-              // Create new reaction with this emoji
-              newReactions = [
-                ...cleanedReactions,
-                {
-                  emoji,
-                  count: 1,
-                  users: [
-                    {
-                      id: "me",
-                      name: "You",
-                      avatar: "https://i.pravatar.cc/150?img=10",
-                    },
-                  ],
-                },
-              ];
-            }
+              // Add current user to this emoji reaction
+              const cleanedExisting = cleanedReactions.find(
+                (r) => r.emoji === emoji
+              );
 
-            return { ...msg, reactions: newReactions };
+              if (cleanedExisting) {
+                newReactions = cleanedReactions.map((r) =>
+                  r.emoji === emoji
+                    ? {
+                        ...r,
+                        count: r.count + 1,
+                        users: [
+                          ...r.users,
+                          {
+                            id: "me",
+                            name: "You",
+                            avatar: "https://i.pravatar.cc/150?img=10",
+                          },
+                        ],
+                      }
+                    : r
+                );
+              } else {
+                newReactions = [
+                  ...cleanedReactions,
+                  {
+                    emoji,
+                    count: 1,
+                    users: [
+                      {
+                        id: "me",
+                        name: "You",
+                        avatar: "https://i.pravatar.cc/150?img=10",
+                      },
+                    ],
+                  },
+                ];
+              }
+            }
+          } else {
+            // Remove all other reactions from "me" first (only 1 reaction allowed)
+            const cleanedReactions = existingReactions
+              .map((r) => ({
+                ...r,
+                users: r.users.filter((u) => u.id !== "me"),
+                count: r.users.filter((u) => u.id !== "me").length,
+              }))
+              .filter((r) => r.count > 0);
+
+            // Create new reaction with this emoji
+            newReactions = [
+              ...cleanedReactions,
+              {
+                emoji,
+                count: 1,
+                users: [
+                  {
+                    id: "me",
+                    name: "You",
+                    avatar: "https://i.pravatar.cc/150?img=10",
+                  },
+                ],
+              },
+            ];
           }
-          return msg;
-        })
-      );
-    }
+
+          return { ...msg, reactions: newReactions };
+        }
+        return msg;
+      }) as Message[]
+    );
   };
 
   const handleQuickReaction = (messageId: string, emoji: string) => {
@@ -917,7 +774,7 @@ export default function ChatScreen() {
           return { ...msg, reactions: newReactions };
         }
         return msg;
-      })
+      }) as Message[]
     );
   };
 
@@ -942,6 +799,48 @@ export default function ChatScreen() {
 
   const handleReplyInThread = () => {
     Alert.alert("Reply in Thread", "Thread feature coming soon!");
+  };
+
+  const handleCopy = () => {
+    if (selectedMessage?.text) {
+      Clipboard.setStringAsync(selectedMessage.text);
+      Alert.alert("Copied", "Message copied to clipboard");
+    }
+    setShowOptionsSheet(false);
+  };
+
+  const handleEdit = () => {
+    setShowEditModal(true);
+    setShowOptionsSheet(false);
+  };
+
+  const handleSaveEdit = async (newText: string) => {
+    if (!selectedMessage || !user?.uid) return;
+
+    try {
+      // Update message in Firebase
+      await chatService.editMessage(selectedMessage.id, user.uid, newText);
+
+      // Update local state optimistically
+      setMessages(
+        messages.map((msg) =>
+          msg.id === selectedMessage.id
+            ? { ...msg, text: newText, isEdited: true }
+            : msg
+        ) as Message[]
+      );
+
+      setShowEditModal(false);
+      console.log("Message edited successfully");
+    } catch (error) {
+      console.error("Error editing message:", error);
+      Alert.alert("Error", "Failed to edit message. Please try again.");
+    }
+  };
+
+  const handleLongPress = (message: Message) => {
+    setSelectedMessage(message);
+    setShowOptionsSheet(true);
   };
 
   // Attachment menu handlers
@@ -1081,12 +980,6 @@ export default function ChatScreen() {
   const getMessageOptions = (): MessageOption[] => {
     const baseOptions: MessageOption[] = [
       {
-        id: "info",
-        label: "Info",
-        icon: "information-outline",
-        action: () => Alert.alert("Info", "Message info coming soon!"),
-      },
-      {
         id: "copy",
         label: "Copy",
         icon: "content-copy",
@@ -1103,27 +996,12 @@ export default function ChatScreen() {
       });
     }
 
-    baseOptions.push(
-      {
-        id: "reply",
-        label: "Reply in Thread",
-        icon: "reply",
-        action: handleReplyInThread,
-      },
-      {
-        id: "translate",
-        label: "Translate",
-        icon: "translate",
-        action: handleTranslate,
-      },
-      {
-        id: "delete",
-        label: "Delete",
-        icon: "delete-outline",
-        color: "#FF5252",
-        action: handleDelete,
-      }
-    );
+    baseOptions.push({
+      id: "reply",
+      label: "Reply in Thread",
+      icon: "reply",
+      action: handleReplyInThread,
+    });
 
     return baseOptions;
   };
@@ -1194,7 +1072,11 @@ export default function ChatScreen() {
                   item.isMine ? styles.myMessageTime : styles.theirMessageTime,
                 ]}
               >
-                {item.time}
+                {new Date(item.time).toLocaleTimeString("vi-VN", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                  hour12: false,
+                })}
               </Text>
               {item.isEdited && (
                 <Text
@@ -1359,15 +1241,32 @@ export default function ChatScreen() {
     </TouchableOpacity>
   );
 
-  const renderDateSeparator = () => (
+  const renderDateSeparator = (date: string) => (
     <View style={styles.dateSeparator}>
       <View style={styles.dateLine} />
-      <View style={styles.dateContainer}>
-        <Text style={styles.dateText}>Today</Text>
-      </View>
+      <Text style={styles.dateText}>{date}</Text>
       <View style={styles.dateLine} />
     </View>
   );
+
+  const renderMessageWithTimeline = ({
+    item,
+    index,
+  }: {
+    item: Message;
+    index: number;
+  }) => {
+    const previousMessage = index > 0 ? messages[index - 1] : undefined;
+    const showTimeline = shouldShowTimeline(item, previousMessage);
+
+    return (
+      <View>
+        {showTimeline &&
+          renderDateSeparator(formatTimelineDate(new Date(item.time)))}
+        {renderMessage({ item })}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -1436,9 +1335,8 @@ export default function ChatScreen() {
         ref={flatListRef}
         data={messages}
         keyExtractor={(item) => item.id}
-        renderItem={renderMessage}
+        renderItem={renderMessageWithTimeline}
         contentContainerStyle={styles.messagesList}
-        ListHeaderComponent={renderDateSeparator}
         showsVerticalScrollIndicator={false}
         style={styles.messagesListContainer}
       />
@@ -1683,17 +1581,11 @@ const styles = StyleSheet.create({
     height: 1,
     backgroundColor: "#E0E0E0",
   },
-  dateContainer: {
-    backgroundColor: "#6D5FFD",
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginHorizontal: 12,
-  },
   dateText: {
-    color: "#FFFFFF",
+    color: "#9E9E9E",
     fontSize: 12,
     fontWeight: "500",
+    marginHorizontal: 12,
   },
   messageContainer: {
     marginVertical: 4,
@@ -1850,8 +1742,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 4,
-  },
-  iconButton: {
-    padding: 8,
   },
 });

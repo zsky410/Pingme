@@ -6,7 +6,6 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
   Alert,
-  Animated,
   FlatList,
   Image,
   StyleSheet,
@@ -15,11 +14,6 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import {
-  GestureHandlerRootView,
-  PanGestureHandler,
-  State,
-} from "react-native-gesture-handler";
 import { SafeAreaView } from "react-native-safe-area-context";
 export default function ChatsScreen() {
   const router = useRouter();
@@ -27,7 +21,6 @@ export default function ChatsScreen() {
   const [chats, setChats] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
-  const [swipeAnimations] = useState<{ [key: string]: Animated.Value }>({});
 
   useEffect(() => {
     let cancelled = false;
@@ -119,61 +112,6 @@ export default function ChatsScreen() {
     };
   }, [search]);
 
-  // Handle swipe gestures
-  const handleSwipe = (chatId: string, dx: number) => {
-    if (!swipeAnimations[chatId]) {
-      swipeAnimations[chatId] = new Animated.Value(0);
-    }
-
-    const maxSwipe = -80; // Maximum swipe distance
-    const newX = Math.max(maxSwipe, dx);
-
-    Animated.spring(swipeAnimations[chatId], {
-      toValue: newX,
-      useNativeDriver: true,
-      tension: 100,
-      friction: 8,
-    }).start();
-  };
-
-  const resetSwipe = (chatId: string) => {
-    if (swipeAnimations[chatId]) {
-      Animated.spring(swipeAnimations[chatId], {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 100,
-        friction: 8,
-      }).start();
-    }
-  };
-
-  // Handle delete chat
-  const handleDeleteChat = (chatId: string, chatName: string) => {
-    Alert.alert(
-      "Delete Chat",
-      `Are you sure you want to delete "${chatName}"? This will only remove the chat from your list.`,
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: async () => {
-            try {
-              if (user?.uid) {
-                await chatService.clearChatForUser(chatId, user.uid);
-                // Remove from local state
-                setChats((prev) => prev.filter((chat) => chat.id !== chatId));
-              }
-            } catch (error) {
-              console.log("Delete chat error:", error);
-              Alert.alert("Error", "Failed to delete chat");
-            }
-          },
-        },
-      ]
-    );
-  };
-
   const renderChatItem = ({ item }: { item: any }) => {
     // For 1:1 chats, show other user's name instead of chatName
     let displayName = "Chat";
@@ -199,91 +137,60 @@ export default function ChatsScreen() {
       }
     }
 
-    const translateX = swipeAnimations[item.id] || new Animated.Value(0);
-
-    const onGestureEvent = Animated.event(
-      [{ nativeEvent: { translationX: translateX } }],
-      { useNativeDriver: true }
-    );
-
-    const onHandlerStateChange = (event: any) => {
-      if (event.nativeEvent.state === State.END) {
-        const { translationX } = event.nativeEvent;
-        if (translationX < -40) {
-          // Swipe left enough to show delete button
-          handleSwipe(item.id, -80);
-        } else {
-          // Reset position
-          resetSwipe(item.id);
-        }
-      }
-    };
-
     return (
-      <View style={styles.swipeContainer}>
-        {/* Delete button background */}
-        <View style={styles.deleteButtonContainer}>
-          <TouchableOpacity
-            style={styles.deleteButton}
-            onPress={() => handleDeleteChat(item.id, displayName)}
-          >
-            <MaterialCommunityIcons name="delete" size={24} color="#FFFFFF" />
-          </TouchableOpacity>
+      <TouchableOpacity
+        style={styles.chatItem}
+        onPress={() => router.push(`/chat/${item.id}`)}
+      >
+        <View style={styles.avatarContainer}>
+          {item.otherUser?.avatar ? (
+            <Image
+              source={{
+                uri: `data:${
+                  item.otherUser.avatarType || "image/jpeg"
+                };base64,${item.otherUser.avatar}`,
+              }}
+              style={styles.avatar}
+            />
+          ) : (
+            <View style={[styles.avatar, styles.defaultAvatar]}>
+              <Text style={styles.avatarText}>
+                {(item.otherUser?.fullName || item.otherUser?.name || "U")
+                  .charAt(0)
+                  .toUpperCase()}
+              </Text>
+            </View>
+          )}
+          {item.otherUser?.isOnline && <View style={styles.onlineIndicator} />}
         </View>
 
-        {/* Chat item */}
-        <PanGestureHandler
-          onGestureEvent={onGestureEvent}
-          onHandlerStateChange={onHandlerStateChange}
-        >
-          <Animated.View
-            style={[styles.chatItem, { transform: [{ translateX }] }]}
-          >
-            <TouchableOpacity
-              style={styles.chatItemContent}
-              onPress={() => router.push(`/chat/${item.id}`)}
-            >
-              <View style={styles.avatarContainer}>
-                {item.otherUser?.avatar ? (
-                  <Image
-                    source={{
-                      uri: `data:${
-                        item.otherUser.avatarType || "image/jpeg"
-                      };base64,${item.otherUser.avatar}`,
-                    }}
-                    style={styles.avatar}
-                  />
-                ) : (
-                  <View style={[styles.avatar, styles.defaultAvatar]}>
-                    <Text style={styles.avatarText}>
-                      {(item.otherUser?.fullName || item.otherUser?.name || "U")
-                        .charAt(0)
-                        .toUpperCase()}
-                    </Text>
-                  </View>
-                )}
-              </View>
-              <View style={styles.chatContent}>
-                <View style={styles.chatHeader}>
-                  <Text style={styles.chatName}>{displayName}</Text>
-                  {item.lastMessageTime && (
-                    <Text style={styles.chatTime}>{""}</Text>
-                  )}
-                </View>
-                <View style={styles.chatFooter}>
-                  {item.lastMessage && (
-                    <Text style={styles.chatMessage} numberOfLines={1}>
-                      {item.lastMessageSenderId === user?.uid
-                        ? `Bạn: ${item.lastMessage}`
-                        : item.lastMessage}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </PanGestureHandler>
-      </View>
+        <View style={styles.chatContent}>
+          <View style={styles.chatHeader}>
+            <Text style={styles.chatName}>{displayName}</Text>
+            <Text style={styles.chatTime}>
+              {item.lastMessageTime
+                ? new Date(item.lastMessageTime.toDate()).toLocaleTimeString(
+                    "vi-VN",
+                    {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                      hour12: false,
+                    }
+                  )
+                : ""}
+            </Text>
+          </View>
+          <View style={styles.chatFooter}>
+            {item.lastMessage && (
+              <Text style={styles.chatMessage} numberOfLines={1}>
+                {item.lastMessageSenderId === user?.uid
+                  ? `Bạn: ${item.lastMessage}`
+                  : item.lastMessage}
+              </Text>
+            )}
+          </View>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -363,82 +270,76 @@ export default function ChatsScreen() {
   );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <SafeAreaView style={styles.container} edges={["top"]}>
-        {/* Header with integrated search */}
-        <View style={styles.header}>
-          <ExpoImage
-            source={require("@/assets/logo/logo_full.png")}
-            style={styles.logo}
-            contentFit="contain"
-          />
-          <View style={styles.searchContainer}>
-            <View style={styles.searchBar}>
-              <MaterialCommunityIcons
-                name="magnify"
-                size={20}
-                color="#9E9E9E"
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Tìm kiếm..."
-                placeholderTextColor="#9E9E9E"
-                value={search}
-                onChangeText={setSearch}
-                autoCapitalize="none"
-                keyboardType="email-address"
-                returnKeyType="search"
-              />
-              {search.length > 0 && (
-                <TouchableOpacity
-                  onPress={() => setSearch("")}
-                  style={styles.clearButton}
-                >
-                  <MaterialCommunityIcons
-                    name="close-circle"
-                    size={20}
-                    color="#9E9E9E"
-                  />
-                </TouchableOpacity>
-              )}
-            </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header with integrated search */}
+      <View style={styles.header}>
+        <ExpoImage
+          source={require("@/assets/logo/logo_full.png")}
+          style={styles.logo}
+          contentFit="contain"
+        />
+        <View style={styles.searchContainer}>
+          <View style={styles.searchBar}>
+            <MaterialCommunityIcons name="magnify" size={20} color="#9E9E9E" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Tìm kiếm..."
+              placeholderTextColor="#9E9E9E"
+              value={search}
+              onChangeText={setSearch}
+              autoCapitalize="none"
+              keyboardType="email-address"
+              returnKeyType="search"
+            />
+            {search.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setSearch("")}
+                style={styles.clearButton}
+              >
+                <MaterialCommunityIcons
+                  name="close-circle"
+                  size={20}
+                  color="#9E9E9E"
+                />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
+      </View>
 
-        {/* Search results or user chats */}
-        {search.length > 0 ? (
-          <FlatList
-            data={searchResults}
-            keyExtractor={(item) => item.id}
-            renderItem={renderSearchItem}
-            contentContainerStyle={styles.listContent}
-            ListEmptyComponent={renderEmptyState}
-          />
-        ) : chats.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          <FlatList
-            data={chats}
-            keyExtractor={(item) => item.id}
-            renderItem={renderChatItem}
-            contentContainerStyle={styles.listContent}
-          />
-        )}
+      {/* Search results or user chats */}
+      {search.length > 0 ? (
+        <FlatList
+          data={searchResults}
+          keyExtractor={(item) => item.id}
+          renderItem={renderSearchItem}
+          contentContainerStyle={styles.listContent}
+          ListEmptyComponent={renderEmptyState}
+        />
+      ) : chats.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          data={chats}
+          keyExtractor={(item) => item.id}
+          renderItem={renderChatItem}
+          contentContainerStyle={styles.listContent}
+        />
+      )}
 
-        {/* Floating Action Button */}
-        <TouchableOpacity
-          style={styles.fab}
-          onPress={() => router.push("/new-group")}
-          activeOpacity={0.8}
-        >
-          <MaterialCommunityIcons
-            name="account-group"
-            size={28}
-            color="#FFFFFF"
-          />
-        </TouchableOpacity>
-      </SafeAreaView>
-    </GestureHandlerRootView>
+      {/* Floating Action Button */}
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/new-group")}
+        activeOpacity={0.8}
+      >
+        <MaterialCommunityIcons
+          name="account-group"
+          size={28}
+          color="#FFFFFF"
+        />
+      </TouchableOpacity>
+    </SafeAreaView>
   );
 }
 
@@ -510,47 +411,21 @@ const styles = StyleSheet.create({
   listContent: {
     paddingBottom: 16,
   },
-  swipeContainer: {
-    position: "relative",
-    backgroundColor: "#FFFFFF",
-  },
-  deleteButtonContainer: {
-    position: "absolute",
-    right: 0,
-    top: 0,
-    bottom: 0,
-    width: 80,
-    backgroundColor: "#F44336",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: 1,
-  },
-  deleteButton: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
   chatItem: {
     flexDirection: "row",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 8,
     alignItems: "center",
     backgroundColor: "#FFFFFF",
-    zIndex: 2,
-  },
-  chatItemContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
+    marginBottom: 2,
   },
   avatarContainer: {
     position: "relative",
     marginRight: 12,
   },
   avatar: {
-    width: 56,
-    height: 56,
+    width: 46,
+    height: 46,
     borderRadius: 28,
     backgroundColor: "#F0F0F0",
   },

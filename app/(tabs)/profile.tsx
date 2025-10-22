@@ -116,10 +116,7 @@ export default function ProfileTab() {
           console.log("Image blob type:", blob.type);
 
           // Upload avatar as base64 to Firestore
-          const avatarBase64 = await userService.uploadAvatar(
-            user?.uid || "",
-            blob
-          );
+          await userService.uploadAvatar(user?.uid || "", blob);
 
           Alert.alert("Success", "Avatar updated successfully!");
 
@@ -130,7 +127,9 @@ export default function ProfileTab() {
         console.error("Upload error:", uploadError);
         Alert.alert(
           "Upload Error",
-          `Failed to upload avatar: ${uploadError.message}`
+          `Failed to upload avatar: ${
+            (uploadError as any)?.message || "Unknown error"
+          }`
         );
       } finally {
         setLoading(false);
@@ -336,7 +335,8 @@ export default function ProfileTab() {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Change Password</Text>
           <Text style={styles.passwordHint}>
-            Leave password fields empty if you don't want to change password
+            Leave password fields empty if you don&apos;t want to change
+            password
           </Text>
           <View style={styles.passwordContainer}>
             <View style={styles.passwordInputContainer}>

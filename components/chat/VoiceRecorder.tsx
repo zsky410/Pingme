@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   Animated,
 } from "react-native";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface VoiceRecorderProps {
@@ -21,35 +21,17 @@ export default function VoiceRecorder({
   onClose,
   onSendVoice,
 }: VoiceRecorderProps) {
-  const [isRecording, setIsRecording] = useState(false);
   const [duration, setDuration] = useState(0);
   const waveAnimation = useRef(new Animated.Value(0)).current;
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (visible) {
-      // Start recording when modal opens
-      startRecording();
-    } else {
-      // Clean up when modal closes
-      stopRecording();
-    }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
-  }, [visible]);
-
-  const startRecording = () => {
-    setIsRecording(true);
+  const startRecording = useCallback(() => {
     setDuration(0);
 
     // Start timer
     intervalRef.current = setInterval(() => {
       setDuration((prev) => prev + 1);
-    }, 1000);
+    }, 1000) as unknown as NodeJS.Timeout;
 
     // Start wave animation
     Animated.loop(
@@ -66,16 +48,31 @@ export default function VoiceRecorder({
         }),
       ])
     ).start();
-  };
+  }, [waveAnimation]);
 
-  const stopRecording = () => {
-    setIsRecording(false);
+  const stopRecording = useCallback(() => {
     if (intervalRef.current) {
       clearInterval(intervalRef.current);
       intervalRef.current = null;
     }
     waveAnimation.stopAnimation();
-  };
+  }, [waveAnimation]);
+
+  useEffect(() => {
+    if (visible) {
+      // Start recording when modal opens
+      startRecording();
+    } else {
+      // Clean up when modal closes
+      stopRecording();
+    }
+
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [visible, startRecording, stopRecording]);
 
   const handleCancel = () => {
     stopRecording();

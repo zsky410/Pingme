@@ -1,4 +1,4 @@
-import { Text, StyleSheet, TouchableOpacity } from "react-native";
+import { Text, StyleSheet } from "react-native";
 import React from "react";
 import { useRouter } from "expo-router";
 
@@ -60,7 +60,7 @@ export default function MentionText({
           <Text
             key={index}
             style={[styles.mention, mentionStyle]}
-            onPress={() => handleMentionPress(part.username)}
+            onPress={() => handleMentionPress(part.username || "")}
           >
             {part.content}
           </Text>
