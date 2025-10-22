@@ -216,6 +216,88 @@ export const chatService = {
     return messageRef;
   },
 
+  // Send voice message
+  async sendVoiceMessage(
+    chatId: string,
+    senderId: string,
+    duration: number,
+    audioUri: string
+  ) {
+    // Get chat participants to set visibleTo
+    const chatRef = doc(db, "chats", chatId);
+    const chatDoc = await getDoc(chatRef);
+    const chatData = chatDoc.data();
+    const participants = chatData?.participants || [];
+
+    console.log("Sending voice message, participants:", participants);
+
+    const messageData = {
+      chatId,
+      senderId,
+      content: `🎤 Voice message (${duration}s)`, // Fallback text for last message
+      type: "voice",
+      duration: duration,
+      audioUri: audioUri,
+      timestamp: Timestamp.now(),
+      reactions: {},
+      edited: false,
+      visibleTo: participants,
+    };
+
+    const messageRef = await addDoc(collection(db, "messages"), messageData);
+
+    // Update chat's last message
+    await updateDoc(doc(db, "chats", chatId), {
+      lastMessage: `🎤 Voice message (${duration}s)`,
+      lastMessageTime: Timestamp.now(),
+      lastMessageSenderId: senderId,
+    });
+
+    return messageRef;
+  },
+
+  // Send file message
+  async sendFileMessage(
+    chatId: string,
+    senderId: string,
+    fileName: string,
+    fileSize: string,
+    fileUri: string
+  ) {
+    // Get chat participants to set visibleTo
+    const chatRef = doc(db, "chats", chatId);
+    const chatDoc = await getDoc(chatRef);
+    const chatData = chatDoc.data();
+    const participants = chatData?.participants || [];
+
+    console.log("Sending file message, participants:", participants);
+
+    const messageData = {
+      chatId,
+      senderId,
+      content: `📎 ${fileName}`, // Fallback text for last message
+      type: "file",
+      fileName: fileName,
+      fileSize: fileSize,
+      fileUri: fileUri,
+      timestamp: Timestamp.now(),
+      reactions: {},
+      edited: false,
+      visibleTo: participants,
+    };
+
+    const messageRef = await addDoc(collection(db, "messages"), messageData);
+
+    // Update chat's last message
+    await updateDoc(doc(db, "chats", chatId), {
+      lastMessage: `📎 ${fileName}`,
+      lastMessageTime: Timestamp.now(),
+      lastMessageSenderId: senderId,
+    });
+
+    return messageRef;
+  },
+
   // Edit message
   async editMessage(messageId: string, userId: string, newContent: string) {
     try {
@@ -523,9 +605,35 @@ export const chatService = {
 export const fileService = {
   // Upload file
   async uploadFile(file: Blob, path: string) {
-    const fileRef = ref(storage, path);
-    await uploadBytes(fileRef, file);
-    return await getDownloadURL(fileRef);
+    try {
+      console.log("Starting file upload:", {
+        path,
+        fileSize: file.size,
+        fileType: file.type,
+      });
+
+      const fileRef = ref(storage, path);
+
+      // Try upload without metadata first (simpler approach)
+      console.log("Attempting upload without metadata...");
+      await uploadBytes(fileRef, file);
+      console.log("Upload successful, getting download URL...");
+
+      const downloadURL = await getDownloadURL(fileRef);
+      console.log("Download URL obtained:", downloadURL);
+
+      return downloadURL;
+    } catch (error: any) {
+      console.error("Upload error details:", {
+        error: error,
+        code: error?.code,
+        message: error?.message,
+        path,
+        fileSize: file.size,
+        fileType: file.type,
+      });
+      throw error;
+    }
   },
 
   // Delete file

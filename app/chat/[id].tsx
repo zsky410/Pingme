@@ -22,9 +22,14 @@ import VoiceMessage from "@/components/chat/VoiceMessage";
 import VoiceRecorder from "@/components/chat/VoiceRecorder";
 import { useAuth } from "@/contexts/AuthContext";
 import { Poll, usePolls } from "@/contexts/PollContext";
-import { chatService, userService } from "@/services/firebaseService";
+import {
+  chatService,
+  userService,
+  fileService,
+} from "@/services/firebaseService";
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import * as DocumentPicker from "expo-document-picker";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
@@ -60,6 +65,7 @@ interface Message {
   fileName?: string;
   fileSize?: string;
   fileDate?: string;
+  fileUri?: string;
   // For image/video type
   imageUri?: string;
   videoUri?: string;
@@ -324,7 +330,7 @@ export default function ChatScreen() {
             console.log("Real-time messages received:", messageDocs.length);
 
             const mappedMessages: Message[] = messageDocs.map((m: any) => {
-              return {
+              const baseMessage = {
                 id: m.id,
                 type: (m.type as MessageType) || "text",
                 text: m.content,
@@ -333,6 +339,28 @@ export default function ChatScreen() {
                   : new Date().toISOString(),
                 isMine: user.uid === m.senderId,
               };
+
+              // Add voice-specific fields
+              if (m.type === "voice") {
+                return {
+                  ...baseMessage,
+                  voiceUri: m.audioUri,
+                  duration: m.duration || 0,
+                };
+              }
+
+              // Add file-specific fields
+              if (m.type === "file") {
+                return {
+                  ...baseMessage,
+                  fileName: m.fileName,
+                  fileSize: m.fileSize,
+                  fileDate: m.fileDate,
+                  fileUri: m.fileUri,
+                };
+              }
+
+              return baseMessage;
             });
 
             setMessages(mappedMessages);
@@ -872,19 +900,260 @@ export default function ChatScreen() {
     setShowVoiceRecorder(true);
   };
 
-  const handleSendVoice = (duration: number, audioUri?: string) => {
-    // Create voice message
-    const newMessage: Message = {
-      id: Date.now().toString(),
-      type: "voice",
-      duration: duration,
-      voiceUri: audioUri || "mock-voice-uri", // Use real audio URI if available
-      time: new Date().toISOString(), // Use ISO string instead of formatted time
+  const handleSelectFile = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*", // Allow all file types
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const file = result.assets[0];
+        console.log("Selected file:", file);
+
+        // Validate file size (max 10MB)
+        if (file.size && file.size > 10 * 1024 * 1024) {
+          Alert.alert("Error", "File size too large. Maximum size is 10MB.");
+          return;
+        }
+
+        await handleSendFile(file);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
+      Alert.alert("Error", "Failed to select file. Please try again.");
+    }
+  };
+
+  const handleSendFile = async (file: any) => {
+    // Group chats keep sample behavior
+    if (isGroupChat) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        type: "file",
+        fileName: file.name,
+        fileSize: formatFileSize(file.size || 0),
+        fileDate: new Date().toLocaleDateString(),
+        time: new Date().toISOString(),
+        isMine: true,
+        status: "sent",
+      };
+      setMessages([...messages, newMessage]);
+      return;
+    }
+
+    if (!id || typeof id !== "string" || !user?.uid) return;
+
+    // Create optimistic message
+    const optimistic: Message = {
+      id: `local-${Date.now()}`,
+      type: "file",
+      fileName: file.name,
+      fileSize: formatFileSize(file.size || 0),
+      fileDate: new Date().toLocaleDateString(),
+      time: new Date().toISOString(),
       isMine: true,
       status: "sent",
     };
 
-    setMessages([...messages, newMessage]);
+    // Add optimistic message to UI
+    setMessages((prev) => [...prev, optimistic]);
+
+    try {
+      console.log("Uploading file to Firebase Storage...");
+
+      // Fetch the file blob
+      const response = await fetch(file.uri);
+      const fileBlob = await response.blob();
+
+      let uploadedFileUri: string;
+
+      // Try Firebase Storage first, fallback to base64 for small files
+      if (fileBlob.size > 1 * 1024 * 1024) {
+        console.log("File too large for base64, trying Storage...");
+
+        try {
+          // Create unique path for file
+          const filePath = `files/${user.uid}/${Date.now()}_${file.name}`;
+          console.log("Upload path:", filePath);
+
+          // Upload to Firebase Storage
+          uploadedFileUri = await fileService.uploadFile(fileBlob, filePath);
+          console.log("File uploaded to Storage:", uploadedFileUri);
+        } catch (storageError) {
+          console.error("Storage upload failed:", storageError);
+          console.log("Converting to base64 as fallback...");
+
+          // Convert to base64 as fallback
+          const base64 = await blobToBase64(fileBlob);
+          uploadedFileUri = `data:${fileBlob.type};base64,${base64}`;
+          console.log("File converted to base64");
+        }
+      } else {
+        console.log("Converting small file to base64...");
+
+        // Convert to base64 for smaller files
+        const base64 = await blobToBase64(fileBlob);
+        uploadedFileUri = `data:${fileBlob.type};base64,${base64}`;
+        console.log("File converted to base64");
+      }
+
+      // Send message to Firebase
+      await chatService.sendFileMessage(
+        id,
+        user.uid,
+        file.name,
+        formatFileSize(file.size || 0),
+        uploadedFileUri
+      );
+
+      console.log("File message sent successfully");
+
+      // Update optimistic message status
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === optimistic.id
+            ? { ...msg, status: "delivered" as const }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error sending file:", error);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimistic.id));
+      Alert.alert("Error", "Failed to send file. Please try again.");
+    }
+  };
+
+  // Helper function to format file size
+  const formatFileSize = (bytes: number): string => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  };
+
+  // Helper function to convert blob to base64
+  const blobToBase64 = (blob: Blob): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        // Remove data URL prefix
+        const base64Data = base64.split(",")[1];
+        resolve(base64Data);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  };
+
+  const handleSendVoice = async (duration: number, audioUri?: string) => {
+    // Group chats keep sample behavior
+    if (isGroupChat) {
+      const newMessage: Message = {
+        id: Date.now().toString(),
+        type: "voice",
+        duration: duration,
+        voiceUri: audioUri || "mock-voice-uri",
+        time: new Date().toISOString(),
+        isMine: true,
+        status: "sent",
+      };
+      setMessages([...messages, newMessage]);
+      return;
+    }
+
+    if (!id || typeof id !== "string" || !user?.uid) return;
+
+    // Create optimistic message
+    const optimistic: Message = {
+      id: `local-${Date.now()}`,
+      type: "voice",
+      duration: duration,
+      voiceUri: audioUri || "mock-voice-uri",
+      time: new Date().toISOString(),
+      isMine: true,
+      status: "sent",
+    };
+
+    // Add optimistic message to UI
+    setMessages((prev) => [...prev, optimistic]);
+
+    try {
+      // Upload audio file to Firebase Storage
+      let uploadedAudioUri = audioUri;
+
+      if (audioUri && audioUri !== "mock-voice-uri") {
+        console.log("Uploading voice message to Firebase Storage...");
+
+        try {
+          // Fetch the audio blob from local URI
+          console.log("Fetching audio from URI:", audioUri);
+          const response = await fetch(audioUri);
+
+          if (!response.ok) {
+            throw new Error(`Failed to fetch audio: ${response.status}`);
+          }
+
+          const audioBlob = await response.blob();
+          console.log("Audio blob created:", {
+            size: audioBlob.size,
+            type: audioBlob.type,
+          });
+
+          // Validate file size (max 1MB for base64, 10MB for storage)
+          if (audioBlob.size > 1 * 1024 * 1024) {
+            console.log("File too large for base64, trying Storage...");
+
+            // Try Firebase Storage for larger files
+            const audioPath = `voice/${Date.now()}.m4a`;
+            console.log("Upload path:", audioPath);
+
+            uploadedAudioUri = await fileService.uploadFile(
+              audioBlob,
+              audioPath
+            );
+            console.log("Voice message uploaded to Storage:", uploadedAudioUri);
+          } else {
+            // Convert to base64 for smaller files
+            console.log("Converting to base64...");
+            const base64 = await blobToBase64(audioBlob);
+            uploadedAudioUri = `data:audio/m4a;base64,${base64}`;
+            console.log("Voice message converted to base64");
+          }
+        } catch (storageError) {
+          console.error("Storage upload failed:", storageError);
+          console.log("Continuing with local URI as fallback");
+          uploadedAudioUri = audioUri;
+        }
+      }
+
+      // Send message to Firebase
+      await chatService.sendVoiceMessage(
+        id,
+        user.uid,
+        duration,
+        uploadedAudioUri || "mock-voice-uri"
+      );
+
+      console.log("Voice message sent successfully");
+
+      // Update optimistic message status
+      setMessages((prev) =>
+        prev.map((msg) =>
+          msg.id === optimistic.id
+            ? { ...msg, status: "delivered" as const }
+            : msg
+        )
+      );
+    } catch (error) {
+      console.error("Error sending voice message:", error);
+      // Remove optimistic message on error
+      setMessages((prev) => prev.filter((msg) => msg.id !== optimistic.id));
+      Alert.alert("Error", "Failed to send voice message. Please try again.");
+    }
   };
 
   const handlePollVote = (pollId: string, optionIndex: number) => {
@@ -1103,29 +1372,13 @@ export default function ChatScreen() {
       )}
 
       {item.type === "file" && (
-        <View>
-          <FileAttachment
-            fileName={item.fileName!}
-            fileSize={item.fileSize!}
-            fileDate={item.fileDate!}
-            isMine={item.isMine}
-          />
-          <View
-            style={[
-              styles.mediaTimeContainer,
-              item.isMine && styles.mediaTimeContainerMine,
-            ]}
-          >
-            <Text
-              style={[styles.mediaTime, item.isMine && styles.mediaTimeMine]}
-            >
-              {item.time}
-            </Text>
-            {item.isMine && item.status && (
-              <Ionicons name="checkmark-done" size={14} color="#6D5FFD" />
-            )}
-          </View>
-        </View>
+        <FileAttachment
+          fileName={item.fileName!}
+          fileSize={item.fileSize!}
+          fileDate={item.fileDate!}
+          isMine={item.isMine}
+          fileUri={item.fileUri}
+        />
       )}
 
       {item.type === "image" && (
@@ -1389,9 +1642,12 @@ export default function ChatScreen() {
                 color="#757575"
               />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
+            <TouchableOpacity
+              style={styles.iconButton}
+              onPress={handleSelectFile}
+            >
               <MaterialCommunityIcons
-                name="star-four-points-outline"
+                name="attachment"
                 size={24}
                 color="#757575"
               />

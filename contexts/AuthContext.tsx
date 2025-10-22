@@ -92,9 +92,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (storedUser && storedAuthState) {
           console.log("Found stored user, setting user immediately");
           setUser(storedUser);
+          setIsLoading(false);
+        } else {
+          // If no stored user, wait for Firebase auth state
+          console.log("No stored user found, waiting for Firebase auth state");
         }
       } catch (error) {
         console.error("Error initializing auth from storage:", error);
+        setIsLoading(false);
       }
     };
 
@@ -103,6 +108,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Listen for authentication state changes
   useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+
     const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser: FirebaseUser | null) => {
@@ -110,6 +117,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           "Firebase auth state changed:",
           firebaseUser ? "logged in" : "logged out"
         );
+
+        // Clear any existing timeout
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
 
         if (firebaseUser) {
           try {
@@ -173,7 +185,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    return () => unsubscribe();
+    // Fallback timeout to ensure loading doesn't get stuck
+    timeoutId = setTimeout(() => {
+      console.log("Auth timeout - setting loading to false");
+      setIsLoading(false);
+    }, 5000);
+
+    return () => {
+      unsubscribe();
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, []);
 
   const login = async (

@@ -18,7 +18,7 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Auth
+// Initialize Firebase Auth (persistence is automatic on React Native)
 const auth = initializeAuth(app);
 
 // Initialize Firestore

@@ -8,7 +8,6 @@ import {
   EmailAuthProvider,
   reauthenticateWithCredential,
   updatePassword,
-  updateProfile,
 } from "firebase/auth";
 import { useState } from "react";
 import {
@@ -144,21 +143,18 @@ export default function ProfileSettingsScreen() {
           console.log("Image blob type:", blob.type);
 
           // Upload avatar as base64 to Firestore
-          const avatarBase64 = await userService.uploadAvatar(
-            user?.uid || "",
-            blob
-          );
+          await userService.uploadAvatar(user?.uid || "", blob);
 
           Alert.alert("Success", "Avatar updated successfully!");
 
           // Reload user data to show updated avatar
           await reloadUser();
         }
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error("Upload error:", uploadError);
         Alert.alert(
           "Upload Error",
-          `Failed to upload avatar: ${uploadError.message}`
+          `Failed to upload avatar: ${uploadError.message || uploadError}`
         );
       } finally {
         setLoading(false);
@@ -174,10 +170,11 @@ export default function ProfileSettingsScreen() {
 
     try {
       setLoading(true);
-      await updateProfile(auth.currentUser!, {
-        email: email,
-      });
-      Alert.alert("Success", "Email updated successfully!");
+      // Note: Email update requires re-authentication in Firebase
+      Alert.alert(
+        "Info",
+        "Email update requires re-authentication. Please contact support."
+      );
     } catch (error: any) {
       console.error("Error updating email:", error);
       Alert.alert("Error", error.message || "Failed to update email");

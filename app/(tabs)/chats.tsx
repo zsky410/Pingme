@@ -5,7 +5,6 @@ import { Image as ExpoImage } from "expo-image";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
-  Alert,
   FlatList,
   Image,
   StyleSheet,
@@ -110,7 +109,7 @@ export default function ChatsScreen() {
       active = false;
       clearTimeout(t);
     };
-  }, [search]);
+  }, [search, user?.uid]);
 
   const renderChatItem = ({ item }: { item: any }) => {
     // For 1:1 chats, show other user's name instead of chatName
