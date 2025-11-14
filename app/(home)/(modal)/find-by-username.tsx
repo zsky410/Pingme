@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { View } from 'react-native';
+import { Text, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
@@ -26,15 +26,68 @@ const FindByUsernameScreen = () => {
   const search = async (query: string) => {
     try {
       setLoading(true);
-      const { users } = await client.queryUsers({
-        username: { $eq: query },
+      setUser(null); // Reset user khi search mới
+
+      const trimmedQuery = query.trim();
+      if (!trimmedQuery) {
+        setLoading(false);
+        return;
+      }
+
+      console.log('Searching for user with query:', trimmedQuery);
+
+      // Tìm exact match trước (full username với số, ví dụ: "john_41")
+      let { users } = await client.queryUsers({
+        username: { $eq: trimmedQuery },
       });
 
-      if (users.length > 0) {
-        setUser(users[0]);
+      console.log('Exact match results:', users.length);
+
+      // Nếu không tìm thấy exact match, thử tìm tất cả users và filter ở client side
+      // (để tìm partial match, ví dụ: "john" sẽ match "john_41")
+      if (users.length === 0) {
+        try {
+          // Query tất cả users (có thể giới hạn số lượng)
+          const { users: allUsers } = await client.queryUsers(
+            {},
+            { limit: 100 } // Giới hạn 100 users để tránh quá tải
+          );
+
+          // Filter ở client side: tìm username chứa query (case insensitive)
+          const matchedUsers = allUsers.filter((u) => {
+            const username = u.username?.toLowerCase() || '';
+            const name = u.name?.toLowerCase() || '';
+            const searchLower = trimmedQuery.toLowerCase();
+
+            return (
+              (username.includes(searchLower) || name.includes(searchLower)) &&
+              u.id !== client.userID
+            );
+          });
+
+          users = matchedUsers;
+          console.log('Partial match results:', users.length);
+        } catch (partialError) {
+          console.error('Error in partial search:', partialError);
+        }
+      }
+
+      // Lọc bỏ chính user hiện tại
+      const filteredUsers = users.filter((u) => u.id !== client.userID);
+
+      if (filteredUsers.length > 0) {
+        console.log('Found user:', filteredUsers[0].username);
+        setUser(filteredUsers[0]);
+      } else {
+        // Không tìm thấy user
+        console.log('No users found for query:', trimmedQuery);
       }
     } catch (error: any) {
       console.error('Error fetching user:', error);
+      // Hiển thị error message cho user
+      if (error.message) {
+        console.error('Error details:', error.message);
+      }
     } finally {
       setLoading(false);
     }
@@ -76,6 +129,11 @@ const FindByUsernameScreen = () => {
       {loading && (
         <View className="flex items-center justify-center py-4">
           <Spinner />
+        </View>
+      )}
+      {!loading && !user && username.trim().length > 0 && (
+        <View className="flex items-center justify-center py-4">
+          <Text className="text-gray-500">No user found</Text>
         </View>
       )}
       {!loading && user && (

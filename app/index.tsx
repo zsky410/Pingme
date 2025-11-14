@@ -1,10 +1,10 @@
-import { useUser } from '@clerk/clerk-expo';
-import { Redirect, useRouter } from 'expo-router';
-import { Text, View } from 'react-native';
+import { useUser } from "@clerk/clerk-expo";
+import { Redirect, useRouter } from "expo-router";
+import { Text, View } from "react-native";
 
-import AppImage from '@/components/AppImage';
-import Button from '@/components/Button';
-import Screen from '@/components/Screen';
+import AppImage from "@/components/AppImage";
+import Button from "@/components/Button";
+import Screen from "@/components/Screen";
 
 const WelcomeScreen = () => {
   const { isLoaded, isSignedIn } = useUser();
@@ -22,7 +22,7 @@ const WelcomeScreen = () => {
       viewClassName="px-10 pb-10 w-full items-center justify-end gap-16"
     >
       <AppImage
-        source={require('@/assets/images/onboarding_splash_Normal.png')}
+        source={require("@/assets/images/onboarding_splash_Normal.png")}
         className="w-[85%] h-[55%]"
         contentFit="cover"
       />
@@ -37,7 +37,7 @@ const WelcomeScreen = () => {
         </View>
         <Text className="text-base text-gray-500">Terms & Privacy Policy</Text>
       </View>
-      <Button onPress={() => router.navigate('/sign-up')}>Continue</Button>
+      <Button onPress={() => router.navigate("/sign-up")}>Continue</Button>
     </Screen>
   );
 };

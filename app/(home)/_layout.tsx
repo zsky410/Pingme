@@ -123,7 +123,22 @@ const HomeLayout = () => {
 
         if (!chatClient.user) {
           await chatClient.connectUser(chatUser, customProvider);
+          console.log('Stream Chat user connected:', chatClient.userID);
         }
+
+        // Đảm bảo user được upsert vào Stream với đầy đủ thông tin
+        // Điều này quan trọng để user có thể được tìm thấy bởi các user khác
+        await chatClient.upsertUser({
+          id: clerkUser.id,
+          name: clerkUser.fullName!,
+          username: clerkUser.username!,
+          image: clerkUser.hasImage ? clerkUser.imageUrl : undefined,
+        });
+        console.log('User upserted to Stream:', {
+          id: clerkUser.id,
+          username: clerkUser.username,
+          name: clerkUser.fullName,
+        });
 
         setChatClient(chatClient);
         const videoClient = StreamVideoClient.getOrCreateInstance({

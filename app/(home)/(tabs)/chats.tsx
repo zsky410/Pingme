@@ -1,14 +1,14 @@
-import Feather from '@expo/vector-icons/Feather';
-import { Link, useRouter } from 'expo-router';
-import { View } from 'react-native';
-import { Channel } from 'stream-chat';
-import { ChannelList, useChatContext } from 'stream-chat-expo';
+import Feather from "@expo/vector-icons/Feather";
+import { Link, useRouter } from "expo-router";
+import { View } from "react-native";
+import { Channel } from "stream-chat";
+import { ChannelList, useChatContext } from "stream-chat-expo";
 
-import AppMenu from '@/components/AppMenu';
-import Button from '@/components/Button';
-import PreviewAvatar from '@/components/PreviewAvatar';
-import Screen from '@/components/Screen';
-import ScreenLoading from '@/components/ScreenLoading';
+import AppMenu from "@/components/AppMenu";
+import Button from "@/components/Button";
+import PreviewAvatar from "@/components/PreviewAvatar";
+import Screen from "@/components/Screen";
+import ScreenLoading from "@/components/ScreenLoading";
 
 const ChatsScreen = () => {
   const { client } = useChatContext();
@@ -16,7 +16,7 @@ const ChatsScreen = () => {
 
   const goToChannel = (channel: Channel) => {
     router.navigate({
-      pathname: '/chat/[id]',
+      pathname: "/chat/[id]",
       params: { id: channel.id! },
     });
   };
@@ -38,7 +38,7 @@ const ChatsScreen = () => {
       </View>
       <ChannelList
         filters={{
-          type: 'messaging',
+          type: "messaging",
           members: { $in: [client.userID!] },
         }}
         sort={{ last_message_at: -1 }}
