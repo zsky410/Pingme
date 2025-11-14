@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { Text, TextStyle, View } from 'react-native';
+import { StyleSheet, Text, TextStyle, View } from 'react-native';
 import AppImage from './AppImage';
 
 interface AvatarProps {
@@ -19,37 +19,41 @@ const Avatar = ({
   fontWeight = '500',
   placeholderType = 'text',
 }: AvatarProps) => {
-  if (imageUrl)
+  if (imageUrl) {
     return (
       <View
-        className="relative flex shrink-0 overflow-hidden rounded-full"
-        style={{ width: size, height: size }}
+        style={[styles.imageContainer, { width: size, height: size }]}
       >
         <AppImage
           source={{ uri: imageUrl }}
-          className="w-full h-full"
+          style={styles.image}
           alt="name"
           contentFit="cover"
         />
       </View>
     );
+  }
 
   return (
     <View
-      style={{
-        width: size,
-        height: size,
-        backgroundColor: '#d8e8f0',
-      }}
-      className="shrink-0 rounded-full aspect-square flex flex-row items-center justify-center overflow-hidden"
+      style={[
+        styles.placeholderContainer,
+        {
+          width: size,
+          height: size,
+          backgroundColor: '#d8e8f0',
+        },
+      ]}
     >
       {placeholderType === 'text' && (
         <Text
-          style={{
-            fontSize,
-            fontWeight,
-          }}
-          className="leading-[2] text-[#086da0] uppercase"
+          style={[
+            styles.placeholderText,
+            {
+              fontSize,
+              fontWeight,
+            },
+          ]}
         >
           {name ? name[0] : ''}
         </Text>
@@ -60,5 +64,32 @@ const Avatar = ({
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  imageContainer: {
+    position: 'relative',
+    flexShrink: 0,
+    overflow: 'hidden',
+    borderRadius: 9999,
+  },
+  image: {
+    width: '100%',
+    height: '100%',
+  },
+  placeholderContainer: {
+    flexShrink: 0,
+    borderRadius: 9999,
+    aspectRatio: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  placeholderText: {
+    lineHeight: 2,
+    color: '#086da0',
+    textTransform: 'uppercase',
+  },
+});
 
 export default Avatar;

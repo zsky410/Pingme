@@ -1,7 +1,7 @@
 import { useSignIn } from '@clerk/clerk-expo';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
@@ -40,10 +40,10 @@ const SignInScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
-      <View className="gap-3">
-        <Text className="text-center text-3xl font-semibold">Sign in</Text>
-        <Text className="text-center text-base text-gray-500">
+    <Screen viewStyle={styles.view} loadingOverlay={loading}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Sign in</Text>
+        <Text style={styles.subtitle}>
           Enter your email address and password to sign in.
         </Text>
       </View>
@@ -60,14 +60,42 @@ const SignInScreen = () => {
         onChangeText={onChangePassword}
       />
       <Button onPress={onSignInPress}>Continue</Button>
-      <View className="flex-row gap-[3px]">
+      <View style={styles.footer}>
         <Text>Don&apos;t have an account?</Text>
         <Link href="/sign-up">
-          <Text className="text-blue-600">Sign up</Text>
+          <Text style={styles.link}>Sign up</Text>
         </Link>
       </View>
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 40,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  header: {
+    gap: 12,
+  },
+  title: {
+    textAlign: 'center',
+    fontSize: 30,
+    fontWeight: '600',
+  },
+  subtitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: 3,
+  },
+  link: {
+    color: '#2563eb',
+  },
+});
 
 export default SignInScreen;

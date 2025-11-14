@@ -5,6 +5,7 @@ import {
 } from '@stream-io/video-react-native-sdk';
 import { Stack, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import { Platform } from 'react-native';
 import { StreamChat } from 'stream-chat';
 import {
   Chat,
@@ -65,18 +66,34 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
       textContainer: {
         paddingHorizontal: 10,
       },
+      container: {
+        paddingVertical: 0,
+        paddingHorizontal: 0,
+      },
     },
   },
   messageInput: {
     container: {
       borderTopWidth: 0,
+      paddingHorizontal: 0,
+      paddingBottom: 0,
+      paddingTop: 0,
+      backgroundColor: 'transparent',
+      marginBottom: 0,
     },
     inputBoxContainer: {
       backgroundColor: '#eeeeef',
       borderRadius: 20,
-      paddingHorizontal: 0,
+      paddingHorizontal: 16,
       paddingVertical: 6,
       borderColor: '#eeeeef',
+      marginHorizontal: 16,
+      marginTop: 8,
+      marginBottom: 8,
+      minHeight: 40,
+    },
+    input: {
+      paddingVertical: 0,
     },
     audioRecordingButton: {
       micIcon: {
@@ -86,6 +103,44 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
         style: {
           marginHorizontal: 2,
         },
+      },
+    },
+    attachmentPicker: {
+      container: {
+        paddingHorizontal: 0,
+        paddingVertical: 0,
+        backgroundColor: 'transparent',
+      },
+    },
+    attachmentSelectionBar: {
+      container: {
+        paddingHorizontal: 16,
+        paddingTop: 8,
+        paddingBottom: 0,
+        backgroundColor: 'transparent',
+        borderTopWidth: 0,
+        borderBottomWidth: 0,
+        marginBottom: 0,
+        marginTop: 0,
+      },
+      imageContainer: {
+        borderRadius: 8,
+        marginRight: 8,
+        overflow: 'hidden',
+      },
+      image: {
+        borderRadius: 8,
+        width: 80,
+        height: 80,
+      },
+      removeButton: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        borderRadius: 12,
+        width: 24,
+        height: 24,
+      },
+      imagePreview: {
+        borderRadius: 8,
       },
     },
   },

@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import clsx from 'clsx';
 import { AttachButtonProps, useMessageInputContext } from 'stream-chat-expo';
 
 import Button from './Button';
@@ -13,10 +12,12 @@ const AttachButton = ({ disabled }: AttachButtonProps) => {
       variant="plain"
       disabled={disabled}
       onPress={toggleAttachmentPicker}
-      className={clsx(
-        'p-0.5 rotate-[0deg]',
-        isActive && 'bg-gray-600 rounded-full rotate-[45deg]'
-      )}
+      style={{
+        padding: 2,
+        transform: [{ rotate: isActive ? '45deg' : '0deg' }],
+        backgroundColor: isActive ? '#4B5563' : 'transparent',
+        borderRadius: isActive ? 9999 : 0,
+      }}
     >
       <Feather name="plus" size={24} color={isActive ? 'white' : 'black'} />
     </Button>

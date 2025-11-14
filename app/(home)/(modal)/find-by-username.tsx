@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
@@ -118,7 +118,7 @@ const FindByUsernameScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-1 px-4 gap-4">
+    <Screen viewStyle={styles.view}>
       <TextField
         id="username"
         placeholder="Username"
@@ -127,13 +127,13 @@ const FindByUsernameScreen = () => {
         autoCapitalize="none"
       />
       {loading && (
-        <View className="flex items-center justify-center py-4">
+        <View style={styles.loadingContainer}>
           <Spinner />
         </View>
       )}
       {!loading && !user && username.trim().length > 0 && (
-        <View className="flex items-center justify-center py-4">
-          <Text className="text-gray-500">No user found</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No user found</Text>
         </View>
       )}
       {!loading && user && (
@@ -142,5 +142,28 @@ const FindByUsernameScreen = () => {
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 4,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  emptyContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  emptyText: {
+    color: '#6B7280',
+  },
+});
 
 export default FindByUsernameScreen;

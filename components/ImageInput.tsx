@@ -57,7 +57,13 @@ function ImageInput({ name, imageUri, onChangeImage }: ImageInputProps) {
   };
 
   return (
-    <Pressable onPress={handlePress} className="items-center justify-center">
+    <Pressable
+      onPress={handlePress}
+      style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
       <Avatar
         imageUrl={imageUri!}
         size={100}
@@ -70,7 +76,9 @@ function ImageInput({ name, imageUri, onChangeImage }: ImageInputProps) {
           color="#ffffff78"
           name="edit-2"
           size={40}
-          className="absolute"
+          style={{
+            position: 'absolute',
+          }}
         />
       )}
     </Pressable>

@@ -14,7 +14,6 @@
     "@clerk/clerk-expo": "^2.14.2",
     "@config-plugins/react-native-webrtc": "^12.0.0",
     "@expo/vector-icons": "^14.1.0",
-    "@notifee/react-native": "^9.1.8",
     "@op-engineering/op-sqlite": "^14.1.2",
     "@react-native-community/netinfo": "11.4.1",
     "@react-navigation/bottom-tabs": "^7.3.10",
@@ -49,7 +48,6 @@
     "expo-system-ui": "~5.0.9",
     "expo-video": "~2.2.2",
     "expo-web-browser": "~14.2.0",
-    "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.4",
@@ -69,7 +67,6 @@
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
-    "tailwindcss": "^3.4.17",
     "typescript": "~5.8.3"
   },
   "private": true

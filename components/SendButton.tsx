@@ -1,5 +1,4 @@
 import { Feather } from '@expo/vector-icons';
-import clsx from 'clsx';
 import {
   useAttachmentManagerState,
   useMessageComposer,
@@ -26,7 +25,11 @@ const SendButton = () => {
     <Button
       variant="plain"
       onPress={sendMessage}
-      className={clsx('p-0.5 bg-primary rounded-full')}
+      style={{
+        padding: 2,
+        backgroundColor: '#2c6bed',
+        borderRadius: 9999,
+      }}
     >
       <Feather name="arrow-up" size={24} color="white" />
     </Button>

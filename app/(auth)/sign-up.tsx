@@ -1,8 +1,7 @@
 import { useSignUp } from '@clerk/clerk-expo';
-import clsx from 'clsx';
 import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
@@ -76,17 +75,17 @@ const SignUpScreen = () => {
 
   if (pendingVerification) {
     return (
-      <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
-        <View className="gap-3">
-          <Text className="text-center text-3xl font-semibold">
+      <Screen viewStyle={styles.view} loadingOverlay={loading}>
+        <View style={styles.header}>
+          <Text style={styles.title}>
             Verify email address
           </Text>
-          <Text className="text-center text-base text-gray-500">
+          <Text style={styles.subtitle}>
             Enter the code we sent to {emailAddress.toLowerCase()}
           </Text>
           <Button
             variant="text"
-            className="text-base text-blue-600"
+            style={styles.wrongEmailButton}
             onPress={() => setPendingVerification(false)}
           >
             Wrong email?
@@ -104,14 +103,14 @@ const SignUpScreen = () => {
   }
 
   return (
-    <Screen viewClassName="pt-10 px-4 gap-4" loadingOverlay={loading}>
-      <View className="gap-3">
-        <Text className="text-center text-3xl font-semibold">Sign up</Text>
-        <Text className="text-center text-base text-gray-500">
+    <Screen viewStyle={styles.view} loadingOverlay={loading}>
+      <View style={styles.header}>
+        <Text style={styles.title}>Sign up</Text>
+        <Text style={styles.subtitle}>
           Create an account to get started
         </Text>
       </View>
-      <View className="gap-3">
+      <View style={styles.form}>
         <TextField
           value={firstName}
           placeholder="First name"
@@ -122,30 +121,28 @@ const SignUpScreen = () => {
           placeholder="Last name"
           onChangeText={onChangeLastName}
         />
-        <View className="relative">
+        <View style={styles.usernameContainer}>
           <TextField
             autoCapitalize="none"
             value={username}
             placeholder="Username"
             onChangeText={onChangeUsername}
-            className="pr-12"
+            inputStyle={styles.usernameInput}
           />
-          <View className="absolute right-3 top-3 flex-row gap-2">
-            <View className="w-0.5 h-5 bg-gray-300" />
+          <View style={styles.usernameSuffix}>
+            <View style={styles.divider} />
             <TextInput
               keyboardType="number-pad"
               maxLength={2}
               value={usernameNumber}
               onChangeText={onChangeNumber}
-              className="w-5 h-5 android:w-8 android:h-12 android:bottom-3.5"
+              style={[
+                styles.numberInput,
+                Platform.OS === 'android' && styles.numberInputAndroid,
+              ]}
             />
           </View>
-          <Text
-            className={clsx(
-              'pl-2 pt-2 text-xs',
-              numberError ? 'text-red-500' : 'text-gray-500'
-            )}
-          >
+          <Text style={[styles.helperText, numberError && styles.errorText]}>
             {numberError ||
               'Usernames are always paired with a set of numbers.'}
           </Text>
@@ -164,14 +161,86 @@ const SignUpScreen = () => {
         />
       </View>
       <Button onPress={onSignUpPress}>Continue</Button>
-      <View className="flex-row gap-[3px]">
+      <View style={styles.footer}>
         <Text>Already have an account?</Text>
         <Link href="/sign-in">
-          <Text className="text-blue-600">Sign in</Text>
+          <Text style={styles.link}>Sign in</Text>
         </Link>
       </View>
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 40,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  header: {
+    gap: 12,
+  },
+  title: {
+    textAlign: 'center',
+    fontSize: 30,
+    fontWeight: '600',
+  },
+  subtitle: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#6B7280',
+  },
+  form: {
+    gap: 12,
+  },
+  usernameContainer: {
+    position: 'relative',
+  },
+  usernameInput: {
+    paddingRight: 48,
+  },
+  usernameSuffix: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  divider: {
+    width: 0.5,
+    height: 20,
+    backgroundColor: '#D1D5DB',
+  },
+  numberInput: {
+    width: 20,
+    height: 20,
+  },
+  numberInputAndroid: {
+    width: 32,
+    height: 48,
+    marginBottom: 14,
+  },
+  helperText: {
+    paddingLeft: 8,
+    paddingTop: 8,
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  errorText: {
+    color: '#EF4444',
+  },
+  footer: {
+    flexDirection: 'row',
+    gap: 3,
+  },
+  link: {
+    color: '#2563eb',
+  },
+  wrongEmailButton: {
+    fontSize: 16,
+    color: '#2563eb',
+  },
+});
 
 export default SignUpScreen;

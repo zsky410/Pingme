@@ -16,7 +16,8 @@ import {
 } from '@stream-io/video-react-native-sdk';
 import { useGlobalSearchParams, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ToggleVideo from '@/components/ToggleVideo';
 
@@ -66,6 +67,7 @@ const CallScreen = () => {
   const { user } = useUser();
   const call = useCall();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { useCallCallingState, useCallCustomData } = useCallStateHooks();
   const callingState = useCallCallingState();
   const customData = useCallCustomData();
@@ -85,8 +87,8 @@ const CallScreen = () => {
   ) {
     return (
       <StreamTheme style={theme}>
-        <View className="flex-1 bg-black">
-          <View className="flex-1 bg-white">
+        <View style={styles.container}>
+          <View style={styles.innerContainer}>
             {!isCallTriggeredByMe && <IncomingCall />}
             {isCallTriggeredByMe && <OutgoingCall />}
           </View>
@@ -97,8 +99,8 @@ const CallScreen = () => {
 
   return (
     <StreamTheme style={theme}>
-      <View className="flex-1 bg-black">
-        <View className="flex-1 pt-safe bg-white">
+      <View style={styles.container}>
+        <View style={[styles.innerContainer, { paddingTop: insets.top }]}>
           <RingingCallContent
             CallContent={(props) => (
               <CallContent
@@ -108,7 +110,7 @@ const CallScreen = () => {
                   await call?.endCall();
                 }}
                 CallControls={(props) => (
-                  <View className="bg-[#1c1c1e] w-full h-[110px] pt-7 flex-row justify-center gap-4 rounded-t-2xl">
+                  <View style={styles.controls}>
                     <ToggleCameraFaceButton />
                     <ToggleVideo />
                     <ToggleMic />
@@ -125,5 +127,27 @@ const CallScreen = () => {
     </StreamTheme>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: 'black',
+  },
+  innerContainer: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  controls: {
+    backgroundColor: '#1c1c1e',
+    width: '100%',
+    height: 110,
+    paddingTop: 28,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 16,
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+  },
+});
 
 export default CallScreen;

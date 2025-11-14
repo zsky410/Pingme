@@ -1,37 +1,42 @@
-import Feather from '@expo/vector-icons/Feather';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { useCalls } from '@stream-io/video-react-native-sdk';
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { View } from 'react-native';
-import { Channel as ChannelType } from 'stream-chat';
+import Feather from "@expo/vector-icons/Feather";
+import Ionicons from "@expo/vector-icons/Ionicons";
+import { useCalls } from "@stream-io/video-react-native-sdk";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { Channel as ChannelType } from "stream-chat";
 import {
   Channel,
   DeepPartial,
   MessageList,
   Theme,
   useChatContext,
-} from 'stream-chat-expo';
+} from "stream-chat-expo";
 
-import AttachButton from '@/components/AttachButton';
-import Button from '@/components/Button';
-import ChannelTitle from '@/components/ChannelTitle';
-import CustomMessageInput from '@/components/CustomMessageInput';
-import MessageAvatar from '@/components/MessageAvatar';
-import MessageListHeader from '@/components/MessageListHeader';
-import PreviewAvatar from '@/components/PreviewAvatar';
-import Screen from '@/components/Screen';
-import ScreenLoading from '@/components/ScreenLoading';
-import SendButton from '@/components/SendButton';
+import AttachButton from "@/components/AttachButton";
+import Button from "@/components/Button";
+import ChannelTitle from "@/components/ChannelTitle";
+import CustomMessageInput from "@/components/CustomMessageInput";
+import MessageAvatar from "@/components/MessageAvatar";
+import MessageContent from "@/components/MessageContent";
+import MessageListHeader from "@/components/MessageListHeader";
+import PreviewAvatar from "@/components/PreviewAvatar";
+import Screen from "@/components/Screen";
+import ScreenLoading from "@/components/ScreenLoading";
+import SendButton from "@/components/SendButton";
 
 const myMessageTheme: DeepPartial<Theme> = {
   messageSimple: {
     content: {
-      senderMessageBackgroundColor: '#175dee',
+      senderMessageBackgroundColor: "#175dee",
       markdown: {
         text: {
-          color: 'white',
+          color: "white",
         },
+      },
+      container: {
+        paddingVertical: 0,
+        paddingHorizontal: 0,
       },
     },
   },
@@ -48,7 +53,7 @@ const ChatScreen = () => {
 
   useEffect(() => {
     const loadChannel = async () => {
-      const channel = chatClient.channel('messaging', channelId);
+      const channel = chatClient.channel("messaging", channelId);
       await channel.watch();
 
       setChannel(channel);
@@ -61,14 +66,14 @@ const ChatScreen = () => {
   const startAudioCall = async () => {
     router.navigate({
       pathname: `/call/[id]`,
-      params: { id: channelId, updateCall: 'true' },
+      params: { id: channelId, updateCall: "true" },
     });
   };
 
   const startVideoCall = async () => {
     router.navigate({
       pathname: `/call/[id]`,
-      params: { id: channelId, updateCall: 'true', video: 'true' },
+      params: { id: channelId, updateCall: "true", video: "true" },
     });
   };
 
@@ -79,16 +84,20 @@ const ChatScreen = () => {
   }
 
   return (
-    <Screen className="flex-1 bg-white" viewClassName="pb-safe">
-      <View className="pl-1 pr-4 pb-1 flex flex-row items-center justify-between w-full h-10">
-        <View className="flex flex-row items-center gap-4">
+    <Screen
+      style={styles.screen}
+      viewStyle={styles.view}
+      edges={["top", "left", "right"]}
+    >
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
           <Button variant="plain" onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={24} color="black" />
           </Button>
           <PreviewAvatar channel={channel!} size={28} fontSize={14} />
           <ChannelTitle channel={channel!} />
         </View>
-        <View className="flex flex-row items-center gap-6">
+        <View style={styles.headerRight}>
           <Button
             variant="plain"
             onPress={startVideoCall}
@@ -105,23 +114,62 @@ const ChatScreen = () => {
           </Button>
         </View>
       </View>
-      <Channel
-        myMessageTheme={myMessageTheme}
-        channel={channel!}
-        keyboardVerticalOffset={60}
-        keyboardBehavior="padding"
-        hasCommands={false}
-        AttachButton={AttachButton}
-        SendButton={SendButton}
-        EmptyStateIndicator={MessageListHeader}
-        MessageAvatar={MessageAvatar}
-        reactionListPosition="bottom"
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
-        <MessageList FooterComponent={MessageListHeader} />
-        <CustomMessageInput />
-      </Channel>
+        <View style={{ flex: 1 }}>
+          <Channel
+            myMessageTheme={myMessageTheme}
+            channel={channel!}
+            keyboardVerticalOffset={0}
+            keyboardBehavior={Platform.OS === "android" ? "padding" : undefined}
+            hasCommands={false}
+            AttachButton={AttachButton}
+            SendButton={SendButton}
+            EmptyStateIndicator={MessageListHeader}
+            MessageAvatar={MessageAvatar}
+            MessageContent={MessageContent}
+            reactionListPosition="bottom"
+          >
+            <MessageList FooterComponent={MessageListHeader} />
+            <CustomMessageInput />
+          </Channel>
+        </View>
+      </KeyboardAvoidingView>
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: "white",
+  },
+  view: {
+    paddingBottom: 0, // SafeAreaView sẽ xử lý
+  },
+  header: {
+    paddingLeft: 4,
+    paddingRight: 16,
+    paddingBottom: 4,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    height: 40,
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 24,
+  },
+});
 
 export default ChatScreen;

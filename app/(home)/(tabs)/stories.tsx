@@ -1,6 +1,6 @@
 import { useUser } from '@clerk/clerk-expo';
 import { Feather } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import AppMenu from '@/components/AppMenu';
 import Avatar from '@/components/Avatar';
@@ -11,34 +11,88 @@ const StoriesScreen = () => {
   const { user } = useUser();
 
   return (
-    <Screen className="bg-white" viewClassName="px-4 pt-1">
-      <View className="flex flex-row items-center justify-between w-full h-8">
+    <Screen style={styles.screen} viewStyle={styles.view}>
+      <View style={styles.header}>
         <AppMenu />
-        <View className="flex flex-row items-center gap-8">
+        <View style={styles.actions}>
           <Button variant="plain">
             <Feather name="camera" size={20} color="black" />
           </Button>
         </View>
       </View>
-      <Button variant="plain" className="flex-row items-center gap-3 mt-4">
-        <View className="relative w-10 h-10">
+      <Button variant="plain" style={styles.storyButton}>
+        <View style={styles.avatarContainer}>
           <Avatar
             imageUrl={user?.imageUrl}
             size={40}
             fontSize={16}
             name={user?.fullName!}
           />
-          <View className="absolute -bottom-1 -right-1 w-[22px] h-[22px] rounded-full border-[3px] border-white bg-blue-600 flex items-center justify-center">
+          <View style={styles.addIcon}>
             <Feather name="plus" size={14} color="white" />
           </View>
         </View>
         <View>
-          <Text className="font-semibold">My Stories</Text>
-          <Text className="text-xs text-gray-500">Tap to add</Text>
+          <Text style={styles.storyTitle}>My Stories</Text>
+          <Text style={styles.storySubtitle}>Tap to add</Text>
         </View>
       </Button>
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: 'white',
+  },
+  view: {
+    paddingHorizontal: 16,
+    paddingTop: 4,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+    height: 32,
+  },
+  actions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 32,
+  },
+  storyButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 16,
+  },
+  avatarContainer: {
+    position: 'relative',
+    width: 40,
+    height: 40,
+  },
+  addIcon: {
+    position: 'absolute',
+    bottom: -4,
+    right: -4,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 3,
+    borderColor: 'white',
+    backgroundColor: '#2563eb',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  storyTitle: {
+    fontWeight: '600',
+  },
+  storySubtitle: {
+    fontSize: 12,
+    color: '#6B7280',
+  },
+});
 
 export default StoriesScreen;

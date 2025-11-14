@@ -1,6 +1,6 @@
 import { Entypo, Feather, MaterialIcons } from '@expo/vector-icons';
 import { Link, useRouter } from 'expo-router';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useChatContext } from 'stream-chat-expo';
 
 import Button from '@/components/Button';
@@ -25,35 +25,29 @@ const NewMessageScreen = () => {
   };
 
   return (
-    <Screen viewClassName="pt-1 px-4">
-      <View className="w-full">
+    <Screen viewStyle={styles.view}>
+      <View style={styles.optionsContainer}>
         <Link href="/new-group" asChild>
-          <Button
-            variant="plain"
-            className="bg-white flex-row items-center justify-between rounded-t-lg pt-0.5"
-          >
-            <View className="px-4">
+          <Button variant="plain" style={styles.optionButtonTop}>
+            <View style={styles.iconContainer}>
               <MaterialIcons name="people-outline" size={24} color="black" />
             </View>
-            <View className="flex-row flex-grow items-center justify-between gap-2 border-b border-gray-200">
+            <View style={styles.optionContent}>
               <Text>New Group</Text>
-              <View className="p-2">
+              <View style={styles.chevronContainer}>
                 <Entypo name="chevron-small-right" size={24} color="gray" />
               </View>
             </View>
           </Button>
         </Link>
         <Link href="/find-by-username" asChild>
-          <Button
-            variant="plain"
-            className="bg-white flex-row items-center justify-between rounded-b-lg pb-0.5"
-          >
-            <View className="px-4">
+          <Button variant="plain" style={styles.optionButtonBottom}>
+            <View style={styles.iconContainer}>
               <Feather name="at-sign" size={24} color="black" />
             </View>
-            <View className="flex-row flex-grow items-center justify-between gap-2">
+            <View style={styles.optionContent}>
               <Text>Find by Username</Text>
-              <View className="p-2">
+              <View style={styles.chevronContainer}>
                 <Entypo name="chevron-small-right" size={24} color="gray" />
               </View>
             </View>
@@ -61,12 +55,12 @@ const NewMessageScreen = () => {
         </Link>
       </View>
       {loadingContacts && (
-        <View className="flex items-center justify-center py-4">
+        <View style={styles.loadingContainer}>
           <Spinner />
         </View>
       )}
       {!loadingContacts && contacts.length > 0 && (
-        <View className="flex flex-col gap-2 mt-4">
+        <View style={styles.contactsContainer}>
           {contacts.map((contact) => (
             <UserCard
               key={contact.id}
@@ -79,5 +73,60 @@ const NewMessageScreen = () => {
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 4,
+    paddingHorizontal: 16,
+  },
+  optionsContainer: {
+    width: '100%',
+  },
+  optionButtonTop: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    paddingTop: 2,
+  },
+  optionButtonBottom: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderBottomLeftRadius: 8,
+    borderBottomRightRadius: 8,
+    paddingBottom: 2,
+  },
+  iconContainer: {
+    paddingHorizontal: 16,
+  },
+  optionContent: {
+    flexDirection: 'row',
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+    paddingVertical: 12,
+  },
+  chevronContainer: {
+    padding: 8,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  contactsContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    marginTop: 16,
+  },
+});
 
 export default NewMessageScreen;

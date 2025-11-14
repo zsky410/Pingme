@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/clerk-expo";
 import { Redirect, useRouter } from "expo-router";
-import { Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 import AppImage from "@/components/AppImage";
 import Button from "@/components/Button";
@@ -17,29 +17,64 @@ const WelcomeScreen = () => {
   }
 
   return (
-    <Screen
-      className="bg-white"
-      viewClassName="px-10 pb-10 w-full items-center justify-end gap-16"
-    >
+    <Screen style={styles.screen} viewStyle={styles.view}>
       <AppImage
         source={require("@/assets/images/onboarding_splash_Normal.png")}
-        className="w-[85%] h-[55%]"
+        style={styles.image}
         contentFit="cover"
       />
-      <View className="flex items-center gap-4">
-        <View className="flex w-full items-center">
-          <Text className="text-center text-[28.5px] font-semibold">
-            Take privacy with you.
-          </Text>
-          <Text className="w-[210px] text-center text-[28.5px] font-semibold">
+      <View style={styles.content}>
+        <View style={styles.textContainer}>
+          <Text style={styles.title}>Take privacy with you.</Text>
+          <Text style={[styles.title, styles.titleSecond]}>
             Be yourself in every message.
           </Text>
         </View>
-        <Text className="text-base text-gray-500">Terms & Privacy Policy</Text>
+        <Text style={styles.terms}>Terms & Privacy Policy</Text>
       </View>
       <Button onPress={() => router.navigate("/sign-up")}>Continue</Button>
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: "white",
+  },
+  view: {
+    paddingHorizontal: 40,
+    paddingBottom: 40,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 64,
+  },
+  image: {
+    width: "85%",
+    height: "55%",
+  },
+  content: {
+    flexDirection: "column",
+    alignItems: "center",
+    gap: 16,
+  },
+  textContainer: {
+    flexDirection: "column",
+    width: "100%",
+    alignItems: "center",
+  },
+  title: {
+    textAlign: "center",
+    fontSize: 28.5,
+    fontWeight: "600",
+  },
+  titleSecond: {
+    width: 210,
+  },
+  terms: {
+    fontSize: 16,
+    color: "#6B7280",
+  },
+});
 
 export default WelcomeScreen;

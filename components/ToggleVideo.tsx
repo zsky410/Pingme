@@ -1,12 +1,24 @@
 import { ToggleVideoPublishingButton } from '@stream-io/video-react-native-sdk';
-import { View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 const ToggleVideo = () => {
   return (
-    <View className="w-12 h-12 rounded-full items-center justify-center bg-[#373737] p-4">
+    <View style={styles.container}>
       <ToggleVideoPublishingButton />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#373737',
+    padding: 16,
+  },
+});
 
 export default ToggleVideo;

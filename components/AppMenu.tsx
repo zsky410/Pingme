@@ -65,24 +65,30 @@ const AppMenu = () => {
           onPress={() => setMenuVisible(false)}
         >
           <View
-            style={{ top: menuPosition.top, left: menuPosition.left }}
-            className="absolute bg-white rounded-lg shadow-md shadow-gray-100 min-w-[250px]"
+            style={[
+              styles.menuContainer,
+              { top: menuPosition.top, left: menuPosition.left },
+            ]}
           >
             <Button
               variant="plain"
-              className="flex-row items-center justify-between py-2 px-3 border-b border-gray-200"
+              style={styles.menuItem}
               onPress={goToProfile}
             >
-              <Text>Profile</Text>
-              <Feather name="user" size={20} color="black" />
+              <View style={styles.menuItemContent}>
+                <Text>Profile</Text>
+                <Feather name="user" size={20} color="black" />
+              </View>
             </Button>
             <Button
               variant="plain"
-              className="flex-row items-center justify-between py-2 px-3"
+              style={styles.menuItemLast}
               onPress={handleSignOut}
             >
-              <Text className="text-red-600">Sign Out</Text>
-              <Feather name="log-out" size={20} color="red" />
+              <View style={styles.menuItemContent}>
+                <Text style={styles.signOutText}>Sign Out</Text>
+                <Feather name="log-out" size={20} color="red" />
+              </View>
             </Button>
           </View>
         </Pressable>
@@ -90,5 +96,47 @@ const AppMenu = () => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  menuContainer: {
+    position: 'absolute',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    minWidth: 250,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  menuItemLast: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+  menuItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+  signOutText: {
+    color: '#DC2626',
+  },
+});
 
 export default AppMenu;

@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 
 import Avatar from './Avatar';
@@ -18,17 +18,37 @@ const UserCard = ({ children, onPress, user }: UserCardProps) => {
     <Button
       variant="plain"
       onPress={onPress}
-      className="bg-white flex-row items-center gap-2 py-3 px-4 rounded-xl"
+      style={styles.container}
     >
-      <View className="h-10 w-10">
+      <View style={styles.avatarContainer}>
         <Avatar name={name} imageUrl={user?.image} size={40} />
       </View>
       <View>
-        <Text className="text-base leading-5">{name}</Text>
+        <Text style={styles.name}>{name}</Text>
       </View>
       {children}
     </Button>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: 'white',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+  },
+  avatarContainer: {
+    height: 40,
+    width: 40,
+  },
+  name: {
+    fontSize: 16,
+    lineHeight: 20,
+  },
+});
 
 export default UserCard;

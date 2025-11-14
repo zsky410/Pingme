@@ -1,36 +1,58 @@
-import clsx from 'clsx';
-import { DimensionValue, Text, TextInput, View } from 'react-native';
+import { DimensionValue, Platform, StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle, TextStyle } from 'react-native';
 
-interface TextFieldProps extends React.ComponentProps<typeof TextInput> {
+interface TextFieldProps extends TextInputProps {
   width?: DimensionValue;
   label?: string;
+  style?: ViewStyle;
+  inputStyle?: TextStyle;
 }
 
 const TextField = ({
   label,
   width = '100%',
-  className,
+  style,
+  inputStyle,
   ...otherProps
 }: TextFieldProps) => {
   return (
     <View
-      style={{ width }}
-      className="relative px-4 flex-row bg-white items-center justify-between rounded-xl py-3 android:py-0 border border-white"
+      style={[styles.container, { width }, style]}
     >
       {label && (
         <View>
-          <Text className="w-[108px] font-medium">{label}</Text>
+          <Text style={styles.label}>{label}</Text>
         </View>
       )}
       <TextInput
-        className={clsx(
-          'flex-1 placeholder:text-gray-400 text-black',
-          className
-        )}
+        style={[styles.input, inputStyle]}
+        placeholderTextColor="#9CA3AF"
         {...otherProps}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    position: 'relative',
+    paddingHorizontal: 16,
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 12,
+    paddingVertical: Platform.OS === 'android' ? 0 : 12,
+    borderWidth: 1,
+    borderColor: 'white',
+  },
+  label: {
+    width: 108,
+    fontWeight: '500',
+  },
+  input: {
+    flex: 1,
+    color: 'black',
+  },
+});
 
 export default TextField;

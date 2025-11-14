@@ -1,5 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { Stack, useRouter } from 'expo-router';
+import { StyleSheet } from 'react-native';
 
 import Button from '@/components/Button';
 
@@ -22,7 +23,7 @@ const ModalLayout = () => {
             <Button
               variant="plain"
               onPress={() => router.back()}
-              className="right-4"
+              style={styles.backButton}
             >
               <Feather name="chevron-left" size={32} />
             </Button>
@@ -55,5 +56,11 @@ const ModalLayout = () => {
     </Stack>
   );
 };
+
+const styles = StyleSheet.create({
+  backButton: {
+    marginRight: 16,
+  },
+});
 
 export default ModalLayout;

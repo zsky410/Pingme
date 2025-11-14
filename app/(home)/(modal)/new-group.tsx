@@ -1,7 +1,7 @@
 import { getRandomBytesAsync } from 'expo-crypto';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { UserResponse } from 'stream-chat';
 import { useChatContext } from 'stream-chat-expo';
 
@@ -110,7 +110,7 @@ const NewGroupScreen = () => {
   );
 
   return (
-    <Screen viewClassName="pt-1 px-4 gap-4">
+    <Screen viewStyle={styles.view}>
       <TextField
         id="groupName"
         label="Group Name"
@@ -127,12 +127,12 @@ const NewGroupScreen = () => {
         autoCapitalize="none"
       />
       {loadingContacts && (
-        <View className="flex items-center justify-center py-4">
+        <View style={styles.loadingContainer}>
           <Spinner />
         </View>
       )}
       {!loadingContacts && users.length > 0 && (
-        <View className="flex flex-col gap-2 mt-2">
+        <View style={styles.usersContainer}>
           {sortedUsers.map((user) => (
             <UserCheckbox
               key={user.id}
@@ -144,7 +144,7 @@ const NewGroupScreen = () => {
         </View>
       )}
       <Button
-        className="mt-auto"
+        style={styles.createButton}
         onPress={createNewGroup}
         disabled={creatingGroup}
       >
@@ -154,5 +154,27 @@ const NewGroupScreen = () => {
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 4,
+    paddingHorizontal: 16,
+    gap: 16,
+  },
+  loadingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 16,
+  },
+  usersContainer: {
+    flexDirection: 'column',
+    gap: 8,
+    marginTop: 8,
+  },
+  createButton: {
+    marginTop: 'auto',
+  },
+});
 
 export default NewGroupScreen;

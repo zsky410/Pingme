@@ -1,8 +1,7 @@
 import { useClerk, useUser } from '@clerk/clerk-expo';
-import clsx from 'clsx';
 import { ImagePickerAsset } from 'expo-image-picker';
 import { useState } from 'react';
-import { Text, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useChatContext } from 'stream-chat-expo';
 
 import Button from '@/components/Button';
@@ -100,10 +99,10 @@ const ProfileScreen = () => {
 
   return (
     <Screen
-      viewClassName="pt-3 px-4 items-center gap-6"
+      viewStyle={styles.view}
       loadingOverlay={loading}
     >
-      <View className="items-center gap-3">
+      <View style={styles.header}>
         <ImageInput
           name={user?.fullName!}
           imageUri={profileImage.uri}
@@ -111,11 +110,11 @@ const ProfileScreen = () => {
             setProfileImage(asset ?? { ...defaultImage, uri: '' })
           }
         />
-        <Text className="text-sm text-gray-400">
+        <Text style={styles.usernameText}>
           {username ? `${username}_${usernameNumber}` : 'Choose your username'}
         </Text>
       </View>
-      <View className="gap-3">
+      <View style={styles.form}>
         <TextField
           value={firstName}
           placeholder="First name"
@@ -126,30 +125,28 @@ const ProfileScreen = () => {
           placeholder="Last name"
           onChangeText={onChangeLastName}
         />
-        <View className="relative">
+        <View style={styles.usernameContainer}>
           <TextField
             autoCapitalize="none"
             value={username}
             placeholder="Username"
             onChangeText={onChangeUsername}
-            className="pr-12"
+            inputStyle={styles.usernameInput}
           />
-          <View className="absolute right-3 top-3 flex-row gap-2">
-            <View className="w-0.5 h-5 bg-gray-300" />
+          <View style={styles.usernameSuffix}>
+            <View style={styles.divider} />
             <TextInput
               keyboardType="number-pad"
               maxLength={2}
               value={usernameNumber}
               onChangeText={onChangeNumber}
-              className="w-5 h-5 android:w-8 android:h-12 android:bottom-3.5"
+              style={[
+                styles.numberInput,
+                Platform.OS === 'android' && styles.numberInputAndroid,
+              ]}
             />
           </View>
-          <Text
-            className={clsx(
-              'pl-2 pt-2 text-xs',
-              numberError ? 'text-red-500' : 'text-gray-500'
-            )}
-          >
+          <Text style={[styles.helperText, numberError && styles.errorText]}>
             {numberError ||
               'Usernames are always paired with a set of numbers.'}
           </Text>
@@ -161,5 +158,63 @@ const ProfileScreen = () => {
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  view: {
+    paddingTop: 12,
+    paddingHorizontal: 16,
+    alignItems: 'center',
+    gap: 24,
+  },
+  header: {
+    alignItems: 'center',
+    gap: 12,
+  },
+  usernameText: {
+    fontSize: 14,
+    color: '#9CA3AF',
+  },
+  form: {
+    gap: 12,
+    width: '100%',
+  },
+  usernameContainer: {
+    position: 'relative',
+  },
+  usernameInput: {
+    paddingRight: 48,
+  },
+  usernameSuffix: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+  },
+  divider: {
+    width: 0.5,
+    height: 20,
+    backgroundColor: '#D1D5DB',
+  },
+  numberInput: {
+    width: 20,
+    height: 20,
+  },
+  numberInputAndroid: {
+    width: 32,
+    height: 48,
+    marginBottom: 14,
+  },
+  helperText: {
+    paddingLeft: 8,
+    paddingTop: 8,
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  errorText: {
+    color: '#EF4444',
+  },
+});
 
 export default ProfileScreen;

@@ -1,6 +1,6 @@
 import Feather from "@expo/vector-icons/Feather";
 import { Link, useRouter } from "expo-router";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 import { Channel } from "stream-chat";
 import { ChannelList, useChatContext } from "stream-chat-expo";
 
@@ -22,15 +22,15 @@ const ChatsScreen = () => {
   };
 
   return (
-    <Screen className="bg-white" viewClassName="px-4">
-      <View className="flex flex-row items-center justify-between w-full h-10">
+    <Screen style={styles.screen} viewStyle={styles.view}>
+      <View style={styles.header}>
         <AppMenu />
-        <View className="flex flex-row items-center gap-4">
+        <View style={styles.actions}>
           <Button variant="plain">
             <Feather name="camera" size={20} />
           </Button>
           <Link href="/new-message" asChild>
-            <Button variant="plain" className="pl-4 py-1">
+            <Button variant="plain" style={styles.editButton}>
               <Feather name="edit" size={18} />
             </Button>
           </Link>
@@ -49,5 +49,30 @@ const ChatsScreen = () => {
     </Screen>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: "white",
+  },
+  view: {
+    paddingHorizontal: 16,
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    width: "100%",
+    height: 40,
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+  },
+  editButton: {
+    paddingLeft: 16,
+    paddingVertical: 4,
+  },
+});
 
 export default ChatsScreen;

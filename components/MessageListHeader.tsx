@@ -1,5 +1,5 @@
 import { MaterialIcons } from '@expo/vector-icons';
-import { Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import {
   useChannelContext,
   useChannelPreviewDisplayName,
@@ -19,15 +19,51 @@ const MessageListHeader = () => {
     : 'This conversation is just between the members of this channel';
 
   return (
-    <View className="items-center gap-3 mt-14 mb-8">
+    <View style={styles.container}>
       <PreviewAvatar channel={channel!} size={80} fontSize={40} />
-      <ChannelTitle channel={channel} className="text-2xl font-semibold" />
-      <View className="w-[280px] items-start justify-center inline-flex flex-row px-6 py-4 bg-white rounded-xl border-[2px] border-gray-100 shadow shadow-gray-100">
+      <ChannelTitle channel={channel} style={styles.title} />
+      <View style={styles.infoBox}>
         <MaterialIcons name="people-outline" size={18} color="black" />
-        <Text className="text-center">{text}</Text>
+        <Text style={styles.text}>{text}</Text>
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    gap: 12,
+    marginTop: 56,
+    marginBottom: 32,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: '600',
+  },
+  infoBox: {
+    width: 280,
+    alignItems: 'flex-start',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    paddingHorizontal: 24,
+    paddingVertical: 16,
+    backgroundColor: 'white',
+    borderRadius: 12,
+    borderWidth: 2,
+    borderColor: '#F3F4F6',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  text: {
+    textAlign: 'center',
+  },
+});
 
 export default MessageListHeader;

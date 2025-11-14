@@ -1,18 +1,25 @@
-import { Text } from 'react-native';
+import { StyleSheet, Text, TextStyle } from 'react-native';
 import { Channel } from 'stream-chat';
 import { useChannelPreviewDisplayName } from 'stream-chat-expo';
 
 interface ChannelTitleProps {
   channel: Channel;
-  className?: string;
+  style?: TextStyle;
 }
 
 const ChannelTitle = ({
   channel,
-  className = 'text-base font-bold',
+  style,
 }: ChannelTitleProps) => {
   const channelName = useChannelPreviewDisplayName(channel);
-  return <Text className={className}>{channelName}</Text>;
+  return <Text style={[styles.default, style]}>{channelName}</Text>;
 };
+
+const styles = StyleSheet.create({
+  default: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+});
 
 export default ChannelTitle;
