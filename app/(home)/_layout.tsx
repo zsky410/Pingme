@@ -1,26 +1,25 @@
-import { useUser } from '@clerk/clerk-expo';
+import { useUser } from "@clerk/clerk-expo";
 import {
   StreamVideo,
   StreamVideoClient,
-} from '@stream-io/video-react-native-sdk';
-import { Stack, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Platform } from 'react-native';
-import { StreamChat } from 'stream-chat';
+} from "@stream-io/video-react-native-sdk";
+import { Stack, useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { StreamChat } from "stream-chat";
 import {
   Chat,
   DeepPartial as ChatDeepPartial,
   Theme as ChatTheme,
   OverlayProvider,
-} from 'stream-chat-expo';
+} from "stream-chat-expo";
 
-import ScreenLoading from '@/components/ScreenLoading';
+import ScreenLoading from "@/components/ScreenLoading";
 
 const tokenProvider = async (userId: string) => {
-  const response = await fetch('/token', {
-    method: 'POST',
+  const response = await fetch("/token", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ userId }),
   });
@@ -30,7 +29,7 @@ const tokenProvider = async (userId: string) => {
 
 const chatTheme: ChatDeepPartial<ChatTheme> = {
   colors: {
-    white_snow: 'white',
+    white_snow: "white",
   },
   channelPreview: {
     container: {
@@ -38,31 +37,31 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
       paddingLeft: 0,
     },
     title: {
-      fontWeight: '500',
+      fontWeight: "500",
     },
     unreadContainer: {
-      backgroundColor: '#2c6bed',
+      backgroundColor: "#2c6bed",
     },
   },
   messageList: {
     contentContainer: {
-      justifyContent: 'flex-end',
+      justifyContent: "flex-end",
       flexGrow: 1,
     },
   },
   inlineDateSeparator: {
     container: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
     },
     text: {
-      color: '#6B7280',
+      color: "#6B7280",
       fontSize: 12,
-      fontWeight: '600',
+      fontWeight: "600",
     },
   },
   messageSimple: {
     content: {
-      receiverMessageBackgroundColor: '#e9e9e9',
+      receiverMessageBackgroundColor: "#e9e9e9",
       textContainer: {
         paddingHorizontal: 10,
       },
@@ -78,69 +77,28 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
       paddingHorizontal: 0,
       paddingBottom: 0,
       paddingTop: 0,
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
       marginBottom: 0,
     },
     inputBoxContainer: {
-      backgroundColor: '#eeeeef',
+      backgroundColor: "#eeeeef",
       borderRadius: 20,
       paddingHorizontal: 16,
       paddingVertical: 6,
-      borderColor: '#eeeeef',
+      borderColor: "#eeeeef",
       marginHorizontal: 16,
       marginTop: 8,
-      marginBottom: 8,
+      marginBottom: 0,
       minHeight: 40,
-    },
-    input: {
-      paddingVertical: 0,
     },
     audioRecordingButton: {
       micIcon: {
-        fill: 'black',
+        fill: "black",
         width: 24,
         height: 24,
         style: {
           marginHorizontal: 2,
         },
-      },
-    },
-    attachmentPicker: {
-      container: {
-        paddingHorizontal: 0,
-        paddingVertical: 0,
-        backgroundColor: 'transparent',
-      },
-    },
-    attachmentSelectionBar: {
-      container: {
-        paddingHorizontal: 16,
-        paddingTop: 8,
-        paddingBottom: 0,
-        backgroundColor: 'transparent',
-        borderTopWidth: 0,
-        borderBottomWidth: 0,
-        marginBottom: 0,
-        marginTop: 0,
-      },
-      imageContainer: {
-        borderRadius: 8,
-        marginRight: 8,
-        overflow: 'hidden',
-      },
-      image: {
-        borderRadius: 8,
-        width: 80,
-        height: 80,
-      },
-      removeButton: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        borderRadius: 12,
-        width: 24,
-        height: 24,
-      },
-      imagePreview: {
-        borderRadius: 8,
       },
     },
   },
@@ -157,7 +115,7 @@ const HomeLayout = () => {
 
   useEffect(() => {
     if (!isSignedIn) {
-      router.replace('/sign-in');
+      router.replace("/sign-in");
     }
 
     const customProvider = async () => {
@@ -178,7 +136,7 @@ const HomeLayout = () => {
 
         if (!chatClient.user) {
           await chatClient.connectUser(chatUser, customProvider);
-          console.log('Stream Chat user connected:', chatClient.userID);
+          console.log("Stream Chat user connected:", chatClient.userID);
         }
 
         // Đảm bảo user được upsert vào Stream với đầy đủ thông tin
@@ -189,7 +147,7 @@ const HomeLayout = () => {
           username: clerkUser.username!,
           image: clerkUser.hasImage ? clerkUser.imageUrl : undefined,
         });
-        console.log('User upserted to Stream:', {
+        console.log("User upserted to Stream:", {
           id: clerkUser.id,
           username: clerkUser.username,
           name: clerkUser.fullName,
@@ -203,7 +161,7 @@ const HomeLayout = () => {
         });
         setVideoClient(videoClient);
       } catch (error) {
-        console.error('Error setting up Stream:', error);
+        console.error("Error setting up Stream:", error);
       } finally {
         setLoading(false);
       }
@@ -229,7 +187,7 @@ const HomeLayout = () => {
             <Stack.Screen
               name="(modal)"
               options={{
-                presentation: 'modal',
+                presentation: "modal",
                 headerShown: false,
               }}
             />
@@ -249,7 +207,7 @@ const HomeLayout = () => {
               name="call/[id]"
               options={{
                 headerShown: false,
-                animation: 'none',
+                animation: "none",
               }}
             />
           </Stack>

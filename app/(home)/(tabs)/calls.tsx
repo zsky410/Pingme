@@ -1,7 +1,6 @@
 import { Feather } from '@expo/vector-icons';
 import { StyleSheet, Text, View } from 'react-native';
 
-import AppMenu from '@/components/AppMenu';
 import Button from '@/components/Button';
 import Screen from '@/components/Screen';
 
@@ -9,7 +8,6 @@ const CallsScreen = () => {
   return (
     <Screen style={styles.screen} viewStyle={styles.view}>
       <View style={styles.header}>
-        <AppMenu />
         <View style={styles.actions}>
           <Button variant="plain">
             <Feather name="phone" size={20} color="black" />
@@ -41,7 +39,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     width: '100%',
     height: 40,
   },

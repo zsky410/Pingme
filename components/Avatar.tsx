@@ -39,9 +39,9 @@ const Avatar = ({
       style={[
         styles.placeholderContainer,
         {
-          width: size,
-          height: size,
-          backgroundColor: '#d8e8f0',
+        width: size,
+        height: size,
+        backgroundColor: '#d8e8f0',
         },
       ]}
     >
@@ -50,8 +50,8 @@ const Avatar = ({
           style={[
             styles.placeholderText,
             {
-              fontSize,
-              fontWeight,
+            fontSize,
+            fontWeight,
             },
           ]}
         >

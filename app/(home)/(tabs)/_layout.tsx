@@ -1,11 +1,11 @@
-import { Ionicons } from '@expo/vector-icons';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useCalls } from '@stream-io/video-react-native-sdk';
-import { Tabs, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { Ionicons } from "@expo/vector-icons";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { useCalls } from "@stream-io/video-react-native-sdk";
+import { Tabs, useRouter } from "expo-router";
+import { useEffect } from "react";
 
-import { HapticTab } from '@/components/HapticTab';
+import { HapticTab } from "@/components/HapticTab";
 
 const TabsLayout = () => {
   const router = useRouter();
@@ -30,20 +30,20 @@ const TabsLayout = () => {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: 'black',
+        tabBarActiveTintColor: "black",
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: 'white',
-          borderTopColor: 'white',
+          backgroundColor: "white",
+          borderTopColor: "white",
         },
         headerTransparent: true,
-        headerTitleAlign: 'center',
+        headerTitleAlign: "left",
       }}
     >
       <Tabs.Screen
         name="chats"
         options={{
-          title: 'Chats',
+          title: "Chats",
           tabBarIcon: ({ color }) => (
             <Ionicons name="chatbubble-sharp" size={24} color={color} />
           ),
@@ -52,7 +52,7 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="calls"
         options={{
-          title: 'Calls',
+          title: "Calls",
           tabBarIcon: ({ color }) => (
             <FontAwesome name="phone" size={28} color={color} />
           ),
@@ -61,9 +61,18 @@ const TabsLayout = () => {
       <Tabs.Screen
         name="stories"
         options={{
-          title: 'Stories',
+          title: "Stories",
           tabBarIcon: ({ color }) => (
             <MaterialIcons name="web-stories" size={28} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color }) => (
+            <Ionicons name="person" size={24} color={color} />
           ),
         }}
       />

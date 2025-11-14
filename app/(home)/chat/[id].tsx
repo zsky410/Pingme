@@ -4,6 +4,7 @@ import { useCalls } from "@stream-io/video-react-native-sdk";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Channel as ChannelType } from "stream-chat";
 import {
   Channel,
@@ -46,6 +47,7 @@ const ChatScreen = () => {
   const { id: channelId } = useLocalSearchParams<{ id: string }>();
   const { client: chatClient } = useChatContext();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
 
   const [channel, setChannel] = useState<ChannelType>();
   const [loading, setLoading] = useState(true);
@@ -134,7 +136,9 @@ const ChatScreen = () => {
             reactionListPosition="bottom"
           >
             <MessageList FooterComponent={MessageListHeader} />
-            <CustomMessageInput />
+            <View style={{ paddingBottom: insets.bottom }}>
+              <CustomMessageInput />
+            </View>
           </Channel>
         </View>
       </KeyboardAvoidingView>
