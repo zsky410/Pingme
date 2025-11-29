@@ -1,9 +1,7 @@
-import Feather from "@expo/vector-icons/Feather";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { useCalls } from "@stream-io/video-react-native-sdk";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Platform, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Channel as ChannelType } from "stream-chat";
 import {
@@ -16,11 +14,9 @@ import {
 
 import AttachButton from "@/components/AttachButton";
 import Button from "@/components/Button";
-import ChannelTitle from "@/components/ChannelTitle";
 import CustomMessageInput from "@/components/CustomMessageInput";
 import MessageAvatar from "@/components/MessageAvatar";
 import MessageContent from "@/components/MessageContent";
-import MessageListHeader from "@/components/MessageListHeader";
 import PreviewAvatar from "@/components/PreviewAvatar";
 import Screen from "@/components/Screen";
 import ScreenLoading from "@/components/ScreenLoading";
@@ -43,47 +39,35 @@ const myMessageTheme: DeepPartial<Theme> = {
   },
 };
 
-const ChatScreen = () => {
-  const { id: channelId } = useLocalSearchParams<{ id: string }>();
+const ThreadScreen = () => {
+  const { id: channelId, messageId } = useLocalSearchParams<{
+    id: string;
+    messageId: string;
+  }>();
   const { client: chatClient } = useChatContext();
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
   const [channel, setChannel] = useState<ChannelType>();
   const [loading, setLoading] = useState(true);
-  const [activeCall] = useCalls();
 
   useEffect(() => {
-    const loadChannel = async () => {
-      const channel = chatClient.channel("messaging", channelId);
-      await channel.watch();
-
-      setChannel(channel);
-      setLoading(false);
+    const loadThread = async () => {
+      try {
+        const channel = chatClient.channel("messaging", channelId);
+        await channel.watch();
+        setChannel(channel);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error loading thread:", error);
+        setLoading(false);
+      }
     };
 
-    if (chatClient && !channel) loadChannel();
-  }, [channelId, channel, chatClient]);
-
-  const startAudioCall = async () => {
-    router.navigate({
-      pathname: `/call/[id]`,
-      params: { id: channelId, updateCall: "true" },
-    });
-  };
-
-  const startVideoCall = async () => {
-    router.navigate({
-      pathname: `/call/[id]`,
-      params: { id: channelId, updateCall: "true", video: "true" },
-    });
-  };
-
-  const callIsActive = !!activeCall && activeCall?.id !== channelId;
-
-  if (loading) {
-    return <ScreenLoading />;
-  }
+    if (chatClient && channelId && messageId) {
+      loadThread();
+    }
+  }, [channelId, messageId, chatClient]);
 
   // Create dynamic theme with safe area bottom inset
   const dynamicMessageInputTheme: DeepPartial<Theme> = {
@@ -111,6 +95,14 @@ const ChatScreen = () => {
     },
   };
 
+  if (loading) {
+    return <ScreenLoading />;
+  }
+
+  if (!channel) {
+    return null;
+  }
+
   return (
     <Screen
       style={styles.screen}
@@ -122,24 +114,13 @@ const ChatScreen = () => {
           <Button variant="plain" onPress={() => router.back()}>
             <Ionicons name="chevron-back" size={24} color="black" />
           </Button>
-          <PreviewAvatar channel={channel!} size={28} fontSize={14} />
-          <ChannelTitle channel={channel!} />
-        </View>
-        <View style={styles.headerRight}>
-          <Button
-            variant="plain"
-            onPress={startVideoCall}
-            disabled={callIsActive}
-          >
-            <Feather name="video" size={24} color="black" />
-          </Button>
-          <Button
-            variant="plain"
-            onPress={startAudioCall}
-            disabled={callIsActive}
-          >
-            <Feather name="phone" size={22} color="black" />
-          </Button>
+          <View style={styles.headerInfo}>
+            <PreviewAvatar channel={channel} size={28} fontSize={14} />
+            <View style={styles.threadInfo}>
+              <Ionicons name="chatbubbles" size={16} color="#666" />
+              <Text style={styles.threadLabel}>Thread</Text>
+            </View>
+          </View>
         </View>
       </View>
       <KeyboardAvoidingView
@@ -150,29 +131,24 @@ const ChatScreen = () => {
         <View style={{ flex: 1 }}>
           <Channel
             myMessageTheme={dynamicMessageInputTheme}
-            channel={channel!}
+            channel={channel}
             keyboardVerticalOffset={0}
-            keyboardBehavior={Platform.OS === "android" ? "padding" : undefined}
+            keyboardBehavior={
+              Platform.OS === "android" ? "padding" : undefined
+            }
             hasCommands={false}
             AttachButton={AttachButton}
             SendButton={SendButton}
-            EmptyStateIndicator={MessageListHeader}
             MessageAvatar={MessageAvatar}
             MessageContent={MessageContent}
             reactionListPosition="bottom"
           >
             <MessageList
-              FooterComponent={MessageListHeader}
-              onThreadSelect={(message) => {
-                if (message?.id) {
-                  router.push({
-                    pathname: `/chat/[id]/thread/[messageId]`,
-                    params: { id: channelId, messageId: message.id },
-                  });
-                }
-              }}
+              threadList={true}
+              parentId={messageId}
+              noGroupByUser={true}
             />
-            <CustomMessageInput />
+            <CustomMessageInput parentId={messageId} />
           </Channel>
         </View>
       </KeyboardAvoidingView>
@@ -186,7 +162,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   view: {
-    paddingBottom: 0, // SafeAreaView sẽ xử lý
+    paddingBottom: 0,
   },
   header: {
     paddingLeft: 4,
@@ -197,17 +173,30 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     height: 40,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e9e9e9",
   },
   headerLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: 16,
   },
-  headerRight: {
+  headerInfo: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 24,
+    gap: 12,
+  },
+  threadInfo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  threadLabel: {
+    fontSize: 14,
+    color: "#666",
+    fontWeight: "500",
   },
 });
 
-export default ChatScreen;
+export default ThreadScreen;
+

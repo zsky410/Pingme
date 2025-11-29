@@ -88,7 +88,7 @@ const chatTheme: ChatDeepPartial<ChatTheme> = {
       borderColor: "#eeeeef",
       marginHorizontal: 16,
       marginTop: 8,
-      marginBottom: 0,
+      marginBottom: 8,
       minHeight: 40,
     },
     audioRecordingButton: {
@@ -199,6 +199,12 @@ const HomeLayout = () => {
             />
             <Stack.Screen
               name="chat/[id]"
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen
+              name="chat/[id]/thread/[messageId]"
               options={{
                 headerShown: false,
               }}
